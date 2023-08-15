@@ -92,7 +92,7 @@ nest.ResetKernel()
 nest.SetKernelStatus({'resolution': 1.0, 'print_time': False})
 
 # Define parameters
-num_neurons = 11000
+num_neurons = 10000
 simulation_time = 100.0  # ms
 dt = 1.0  # ms
 

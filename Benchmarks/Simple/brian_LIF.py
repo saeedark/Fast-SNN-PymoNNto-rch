@@ -17,7 +17,7 @@ dge/dt = -ge / (1*ms) : 1
 dspiked/dt = -spiked / (1*ms) : 1
 '''
 
-N = NeuronGroup(15000, eqs_neurons, threshold='v>vt', reset='v = vr', method='euler')
+N = NeuronGroup(10000, eqs_neurons, threshold='v>vt', reset='v = vr', method='euler')
 
 synaptic_model = '''
 w : 1

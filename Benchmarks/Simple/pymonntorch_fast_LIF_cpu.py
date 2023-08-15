@@ -1,50 +1,53 @@
-from PymoNNto import *
+from pymonntorch import *
 import time
+import torch
+from matplotlib import pyplot as plt
+import numpy as np
 
-settings = {'dtype': float32, 'synapse_mode': SxD}
+settings = {'dtype': torch.float32, 'synapse_mode': SxD, 'device': 'cpu'}
 
 
 class SpikeGeneration(Behavior):
     def initialize(self, neurons):
-        neurons.spikes = neurons.vector('bool')
-        neurons.spikesOld = neurons.vector('bool')
+        neurons.spikes = neurons.vector(dtype=torch.bool)
+        neurons.spikesOld = neurons.vector(dtype=torch.bool)
         neurons.voltage = neurons.vector()
-        self.threshold = self.parameter('threshold')
-        self.decay = self.parameter('decay')
+        self.threshold = self.parameter('threshold', None)
+        self.decay = self.parameter('decay', None)
 
-    def iteration(self, neurons):
-        neurons.spikesOld = neurons.spikes.copy()
+    def forward(self, neurons):
+        neurons.spikesOld = neurons.spikes.clone()
         neurons.spikes = neurons.voltage > self.threshold
         #print(np.sum(neurons.spikes))# number of active neurons around 1.5%
         #neurons.voltage.fill(0.0)
-        neurons.voltage *= np.invert(neurons.spikes) #reset
+        neurons.voltage *= ~neurons.spikes #reset
         neurons.voltage *= self.decay #voltage decay
 
 
 
 class Input(Behavior):
     def initialize(self, neurons):
-        self.strength = self.parameter('strength')
-        for s in neurons.synapses(afferent, 'GLU'):
+        self.strength = self.parameter('strength', None)
+        for s in neurons.synapses('afferent', 'GLU'):
             s.W = s.matrix('random')
-            s.W /= np.sum(s.W, axis=0) #normalize during initialization
+            s.W /= torch.sum(s.W, axis=0) #normalize during initialization
 
-    def iteration(self, neurons):
+    def forward(self, neurons):
         neurons.voltage += neurons.vector('random')
-        for s in neurons.synapses(afferent, 'GLU'):
-            input = np.sum(s.W[s.src.spikes], axis=0)
+        for s in neurons.synapses('afferent', 'GLU'):
+            input = torch.sum(s.W[s.src.spikes], axis=0)
             s.dst.voltage += input * self.strength
 
 
 class STDP(Behavior):
     def initialize(self, neurons):
-        self.speed = self.parameter('speed')
+        self.speed = self.parameter('speed', None)
 
-    def iteration(self, neurons):
-        for s in neurons.synapses(afferent, 'GLU'):
+    def forward(self, neurons):
+        for s in neurons.synapses('afferent', 'GLU'):
             mask = np.ix_(s.src.spikesOld, s.dst.spikes)
             s.W[mask] += self.speed
-            s.W[mask] = np.clip(s.W[mask], 0.0, 1.0)
+            s.W[mask] = torch.clip(s.W[mask], 0.0, 1.0)
 
 
 #class Norm(Behavior):
@@ -55,7 +58,7 @@ class STDP(Behavior):
 
 
 net = Network(settings=settings)
-NeuronGroup(net, tag='NG', size=10000, behavior={
+NeuronGroup(net=net, tag='NG', size=10000, behavior={
     1: SpikeGeneration(threshold=6.1, decay=0.9),
     2: Input(strength=1.0),
     3: STDP(speed=0.001),
@@ -63,7 +66,7 @@ NeuronGroup(net, tag='NG', size=10000, behavior={
     5: EventRecorder(['spikes'])
 })
 
-SynapseGroup(net, src='NG', dst='NG', tag='GLU')
+SynapseGroup(net=net, src='NG', dst='NG', tag='GLU')
 net.initialize()
 
 start = time.time()

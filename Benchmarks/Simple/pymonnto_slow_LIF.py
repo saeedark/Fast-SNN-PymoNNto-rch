@@ -52,7 +52,7 @@ class STDP(Behavior):
 
 
 net = Network(settings=settings)
-NeuronGroup(net, tag='NG', size=15000, behavior={
+NeuronGroup(net, tag='NG', size=10000, behavior={
     1: SpikeGeneration(threshold=6.1, decay=0.9),
     2: Input(strength=1.0),
     3: STDP(speed=0.001),
