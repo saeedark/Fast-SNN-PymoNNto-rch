@@ -4,7 +4,7 @@ import torch
 from matplotlib import pyplot as plt
 import numpy as np
 
-settings = {'dtype': torch.float32, 'synapse_mode': SxD, 'device': 'cpu'}
+settings = {'dtype': torch.float32, 'synapse_mode': "SxD", 'device': 'cpu'}
 
 
 class SpikeGeneration(Behavior):
@@ -57,7 +57,7 @@ class STDP(Behavior):
 #                s.W /= np.sum(s.W, axis=0)
 
 
-net = Network(settings=settings)
+net = Network(**settings)
 NeuronGroup(net=net, tag='NG', size=10000, behavior={
     1: SpikeGeneration(threshold=6.1, decay=0.9),
     2: Input(strength=1.0),

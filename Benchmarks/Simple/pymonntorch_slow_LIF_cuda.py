@@ -3,7 +3,7 @@ import torch
 import time
 from matplotlib import pyplot as plt
 
-settings = {'dtype': torch.float64, 'synapse_mode': DxS, 'device': 'cuda'}
+settings = {'dtype': torch.float64, 'synapse_mode': "DxS", 'device': 'cuda'}
 
 
 class SpikeGeneration(Behavior):
@@ -53,7 +53,7 @@ class STDP(Behavior):
 #            s.W /= np.sum(s.W, axis=0)
 
 
-net = Network(settings=settings)
+net = Network(**settings)
 NeuronGroup(net=net, tag='NG', size=10000, behavior={
     1: SpikeGeneration(threshold=6.1, decay=0.9),
     2: Input(strength=1.0),

@@ -1,10 +1,10 @@
-from pymonntorch import Network, SynapseGroup, NeuronGroup, Behavior, SxD, EventRecorder
+from pymonntorch import Network, SynapseGroup, NeuronGroup, Behavior, EventRecorder
 import torch
 import time
 from globparams import *
 import matplotlib.pyplot as plt
 
-settings = {"dtype": torch.float32, "synapse_mode": SxD, "device": "cpu"}
+settings = {"dtype": torch.float32, "synapse_mode": "SxD", "device": "cpu"}
 
 
 class Izhikevich(Behavior):
@@ -81,7 +81,7 @@ class DiracInput(Behavior):
         s.I = torch.sum(s.W[s.src.spikes], axis=0) * self.strength
 
 
-net = Network(settings=settings)
+net = Network(**settings)
 
 ng = NeuronGroup(
     net=net,
