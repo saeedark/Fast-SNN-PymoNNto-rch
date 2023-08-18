@@ -55,14 +55,14 @@ sg.w = "rand() * W_MAX"
 ng.v = "V_STD * randn() + V_MEAN"
 ng.u = "U_STD * randn() + U_MEAN"
 
-if SPIKE_RECORD:
+if PLOT:
     spikemon = SpikeMonitor(ng)
 
 start = time.time()
 run(DURATION * ms)
 print("simulation time: ", time.time() - start)
 
-if SPIKE_RECORD:
+if PLOT:
     print(f"Total spikes: {len(spikemon.i)}")
     plt.plot(spikemon.t/ms, spikemon.i, '.k')
     plt.xlabel('Time (ms)')

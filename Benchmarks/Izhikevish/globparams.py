@@ -1,3 +1,6 @@
+import sys
+PLOT = not 'no_plot' in sys.argv
+
 DURATION = 300
 SIZE = 2500
 
@@ -16,9 +19,6 @@ W_MIN, W_MAX = 0.0, 1.0
 OFFSET = 15
 NOISE_MEAN = 0
 NOISE_STD = 1
-
-
-SPIKE_RECORD = False
 
 REPORT_FUNC = '''
     if (completed == 1.0) std::cout << "simulation time: " << elapsed << std::endl << std::flush;

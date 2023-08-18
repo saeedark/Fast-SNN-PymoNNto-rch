@@ -2,6 +2,7 @@ from pymonntorch import *
 import torch
 import time
 from matplotlib import pyplot as plt
+from globparams import *
 
 settings = {'dtype': torch.float64, 'synapse_mode': "DxS", 'device': 'cpu'}
 
@@ -54,20 +55,24 @@ class STDP(Behavior):
 
 
 net = Network(**settings)
-NeuronGroup(net=net, tag='NG', size=10000, behavior={
-    1: SpikeGeneration(threshold=6.1, decay=0.9),
-    2: Input(strength=1.0),
-    3: STDP(speed=0.001),
+NeuronGroup(net=net, tag='NG', size=SIZE, behavior={
+    1: SpikeGeneration(threshold=VT, decay=DECAY),
+    2: Input(),
+    3: STDP(speed=STDP_SPEED),
     #4: Norm()
-    5: EventRecorder(variables=['spikes'])
+    #5: EventRecorder(variables=['spikes'])
 })
+
+if PLOT:
+    net.NG.add_behavior(9, EventRecorder('spikes'), False)
 
 SynapseGroup(net=net, src='NG', dst='NG', tag='GLU')
 net.initialize()
 
 start = time.time()
-net.simulate_iterations(100)
+net.simulate_iterations(DURATION)
 print("simulation time: ", time.time()-start)
 
-plt.plot(net['spikes.t', 0], net['spikes.i', 0], '.k')
-plt.show()
+if PLOT:
+    plt.plot(net['spikes.t', 0], net['spikes.i', 0], '.k')
+    plt.show()

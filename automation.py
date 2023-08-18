@@ -25,7 +25,7 @@ def get_number(line, script_loc):
 
 
 def get_script_time(script_loc):
-    result = get_simulation_time(subprocess.check_output(["python3", script_loc]))
+    result = get_simulation_time(subprocess.check_output(["python3", script_loc, 'no_plot']))
     if len(result) == 0:
         print(f"ERROR: no simulation time on {script_loc}")
     elif len(result) > 1:

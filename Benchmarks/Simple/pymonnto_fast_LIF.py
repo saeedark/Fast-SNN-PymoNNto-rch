@@ -1,5 +1,6 @@
 from PymoNNto import *
 import time
+from globparams import *
 
 settings = {'dtype': float32, 'synapse_mode': SxD}
 
@@ -17,14 +18,13 @@ class SpikeGeneration(Behavior):
         neurons.spikes = neurons.voltage > self.threshold
         #print(np.sum(neurons.spikes))# number of active neurons around 1.5%
         #neurons.voltage.fill(0.0)
-        neurons.voltage *= np.invert(neurons.spikes) #reset
+        neurons.voltage *= np.invert(neurons.spikes) #reset VR
         neurons.voltage *= self.decay #voltage decay
 
 
 
 class Input(Behavior):
     def initialize(self, neurons):
-        self.strength = self.parameter('strength')
         for s in neurons.synapses(afferent, 'GLU'):
             s.W = s.matrix('random')
             s.W /= np.sum(s.W, axis=0) #normalize during initialization
@@ -33,7 +33,7 @@ class Input(Behavior):
         neurons.voltage += neurons.vector('random')
         for s in neurons.synapses(afferent, 'GLU'):
             input = np.sum(s.W[s.src.spikes], axis=0)
-            s.dst.voltage += input * self.strength
+            s.dst.voltage += input
 
 
 class STDP(Behavior):
@@ -55,20 +55,23 @@ class STDP(Behavior):
 
 
 net = Network(settings=settings)
-NeuronGroup(net, tag='NG', size=10000, behavior={
-    1: SpikeGeneration(threshold=6.1, decay=0.9),
-    2: Input(strength=1.0),
-    3: STDP(speed=0.001),
+NeuronGroup(net, tag='NG', size=SIZE, behavior={
+    1: SpikeGeneration(threshold=VT, decay=DECAY),
+    2: Input(),
+    3: STDP(speed=STDP_SPEED),
     #4: Norm(),
-    5: EventRecorder(['spikes'])
 })
+
+if PLOT:
+    net.NG.add_behavior(9, EventRecorder('spikes'), False)
 
 SynapseGroup(net, src='NG', dst='NG', tag='GLU')
 net.initialize()
 
 start = time.time()
-net.simulate_iterations(100)
+net.simulate_iterations(DURATION)
 print("simulation time: ", time.time()-start)
 
-plt.plot(net['spikes.t', 0], net['spikes.i', 0], '.k')
-plt.show()
+if PLOT:
+    plt.plot(net['spikes.t', 0], net['spikes.i', 0], '.k')
+    plt.show()

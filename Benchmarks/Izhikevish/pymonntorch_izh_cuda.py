@@ -83,7 +83,7 @@ class DiracInput(Behavior):
 
 net = Network(**settings)
 
-ng = NeuronGroup(
+NeuronGroup(
     net=net,
     tag="NG",
     size=SIZE,
@@ -93,13 +93,13 @@ ng = NeuronGroup(
     },
 )
 
-if SPIKE_RECORD:
-    ng.add_behavior(9, EventRecorder('spikes'), False)
+if PLOT:
+    net.NG.add_behavior(9, EventRecorder('spikes'), False)
 
 SynapseGroup(
     net=net,
-    src=ng,
-    dst=ng,
+    src='NG',
+    dst='NG',
     tag="GLU",
     behavior={
         4: DiracInput(strength=DIRAC_STRENGTH),
@@ -115,7 +115,7 @@ net.simulate_iterations(DURATION)
 print("simulation time: ", time.time() - start)
 
 
-if SPIKE_RECORD:
+if PLOT:
     print(f"Total spikes: {len(net['spikes.i', 0])}")
     plt.plot(net['spikes.t', 0].to('cpu'), net['spikes.i', 0].to('cpu'), '.k')
     plt.show()
