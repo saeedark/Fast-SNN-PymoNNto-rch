@@ -15,6 +15,11 @@ from globparams import *
 settings = {"dtype": float32, "synapse_mode": SxD}
 
 
+class TimeResolution(Behavior):
+    def initialize(self, n):
+        n.dt = self.parameter("dt", 1)
+
+
 class Izhikevich(Behavior):
     def initialize(self, n):
         self.a = self.parameter("a")
@@ -33,13 +38,13 @@ class Izhikevich(Behavior):
         n.v[n.spikes] = self.c
         n.u[n.spikes] += self.d
 
-        n.v += 0.04 * n.v**2 + 5 * n.v + 140 - n.u + n.I  # * n.network.dt
-        n.u += self.a * (self.b * n.v - n.u)
+        n.v += 0.04 * n.v**2 + 5 * n.v + 140 - n.u + n.I * n.network.dt
+        n.u += self.a * (self.b * n.v - n.u) * n.network.dt
 
 
 class Dendrite(Behavior):
     def initialize(self, n):
-        self.offset = self.parameter('offset', None)
+        self.offset = self.parameter("offset", None)
         n.I = n.vector(self.offset)
 
     def iteration(self, n):
@@ -62,10 +67,14 @@ class STDP(Behavior):
     def iteration(self, s):
         src_spikes = s.src.spikes
         dst_spikes = s.dst.spikes
-        s.src_trace += src_spikes - s.src_trace / self.pre_tau  # * n.network.dt
-        s.dst_trace += dst_spikes - s.dst_trace / self.post_tau  # * n.network.dt
-        s.W[src_spikes] -= s.dst_trace[None, ...] * self.a_minus * (s.W[src_spikes] - W_MIN)
-        s.W[:, dst_spikes] += s.src_trace[..., None] * self.a_plus * (W_MAX - s.W[:, dst_spikes])
+        s.src_trace += src_spikes - s.src_trace / self.pre_tau * s.network.dt
+        s.dst_trace += dst_spikes - s.dst_trace / self.post_tau * s.network.dt
+        s.W[src_spikes] -= (
+            s.dst_trace[None, ...] * self.a_minus * (s.W[src_spikes] - W_MIN)
+        )
+        s.W[:, dst_spikes] += (
+            s.src_trace[..., None] * self.a_plus * (W_MAX - s.W[:, dst_spikes])
+        )
         # s.W = np.clip(s.W, W_MIN, W_MAX)
 
 
@@ -80,7 +89,7 @@ class DiracInput(Behavior):
         s.I = np.sum(s.W[s.src.spikes], axis=0) * self.strength
 
 
-net = Network(settings=settings)
+net = Network(behavior={1: TimeResolution()}, settings=settings)
 
 NeuronGroup(
     net,
@@ -93,12 +102,12 @@ NeuronGroup(
 )
 
 if PLOT:
-    net.NG.add_behavior(9, EventRecorder('spikes'), False)
+    net.NG.add_behavior(9, EventRecorder("spikes"), False)
 
 SynapseGroup(
     net,
-    src='NG',
-    dst='NG',
+    src="NG",
+    dst="NG",
     tag="GLU",
     behavior={
         4: DiracInput(strength=DIRAC_STRENGTH),
@@ -115,5 +124,5 @@ print("simulation time: ", time.time() - start)
 
 if PLOT:
     print(f"Total spikes: {len(net['spikes.i', 0])}")
-    plt.plot(net['spikes.t', 0], net['spikes.i', 0], '.k')
+    plt.plot(net["spikes.t", 0], net["spikes.i", 0], ".k")
     plt.show()

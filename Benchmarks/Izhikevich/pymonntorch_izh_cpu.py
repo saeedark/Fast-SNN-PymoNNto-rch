@@ -4,7 +4,12 @@ import time
 from globparams import *
 import matplotlib.pyplot as plt
 
-settings = {"dtype": torch.float32, "synapse_mode": "SxD", "device": "cuda"}
+settings = {"dtype": torch.float32, "synapse_mode": "SxD", "device": "cpu"}
+
+
+class TimeResolution(Behavior):
+    def initialize(self, n):
+        n.dt = self.parameter("dt", 1)
 
 
 class Izhikevich(Behavior):
@@ -25,17 +30,8 @@ class Izhikevich(Behavior):
         n.v[n.spikes] = self.c
         n.u[n.spikes] += self.d
 
-        n.v += 0.04 * n.v**2 + 5 * n.v + 140 - n.u + n.I  # * n.network.dt
-        n.u += self.a * (self.b * n.v - n.u)
-
-
-class Trace(Behavior):
-    def initialize(self, n):
-        self.tau = self.parameter("tau", None)
-        n.trace = n.vector()
-
-    def forward(self, n):
-        n.trace += n.spikes * 1.0 - n.trace / self.tau  # * n.network.dt
+        n.v += 0.04 * n.v**2 + 5 * n.v + 140 - n.u + n.I * n.network.dt
+        n.u += self.a * (self.b * n.v - n.u) * n.network.dt
 
 
 class Dendrite(Behavior):
@@ -63,10 +59,14 @@ class STDP(Behavior):
     def forward(self, s):
         src_spikes = s.src.spikes
         dst_spikes = s.dst.spikes
-        s.src_trace += src_spikes * 1.0 - s.src_trace / self.pre_tau  # * n.network.dt
-        s.dst_trace += dst_spikes * 1.0 - s.dst_trace / self.post_tau  # * n.network.dt
-        s.W[src_spikes] -= s.dst_trace[None, ...] * self.a_minus * (s.W[src_spikes] - W_MIN)
-        s.W[:, dst_spikes] += s.src_trace[..., None] * self.a_plus * (W_MAX - s.W[:, dst_spikes])
+        s.src_trace += src_spikes * 1.0 - s.src_trace / self.pre_tau * s.network.dt
+        s.dst_trace += dst_spikes * 1.0 - s.dst_trace / self.post_tau * s.network.dt
+        s.W[src_spikes] -= (
+            s.dst_trace[None, ...] * self.a_minus * (s.W[src_spikes] - W_MIN)
+        )
+        s.W[:, dst_spikes] += (
+            s.src_trace[..., None] * self.a_plus * (W_MAX - s.W[:, dst_spikes])
+        )
         # s.W = torch.clip(s.W, W_MIN, W_MAX)
 
 
@@ -81,7 +81,8 @@ class DiracInput(Behavior):
         s.I = torch.sum(s.W[s.src.spikes], axis=0) * self.strength
 
 
-net = Network(**settings)
+net = Network(behavior={1: TimeResolution()},
+              **settings)
 
 NeuronGroup(
     net=net,
@@ -94,12 +95,12 @@ NeuronGroup(
 )
 
 if PLOT:
-    net.NG.add_behavior(9, EventRecorder('spikes'), False)
+    net.NG.add_behavior(9, EventRecorder("spikes"), False)
 
 SynapseGroup(
     net=net,
-    src='NG',
-    dst='NG',
+    src="NG",
+    dst="NG",
     tag="GLU",
     behavior={
         4: DiracInput(strength=DIRAC_STRENGTH),
@@ -117,5 +118,5 @@ print("simulation time: ", time.time() - start)
 
 if PLOT:
     print(f"Total spikes: {len(net['spikes.i', 0])}")
-    plt.plot(net['spikes.t', 0].to('cpu'), net['spikes.i', 0].to('cpu'), '.k')
+    plt.plot(net["spikes.t", 0].to("cpu"), net["spikes.i", 0].to("cpu"), ".k")
     plt.show()

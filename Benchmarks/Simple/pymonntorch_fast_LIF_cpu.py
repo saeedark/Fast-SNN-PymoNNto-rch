@@ -46,7 +46,8 @@ class STDP(Behavior):
 
     def forward(self, neurons):
         for s in neurons.synapses('afferent', 'GLU'):
-            mask = np.ix_(s.src.spikesOld, s.dst.spikes)
+            # mask = np.ix_(s.src.spikesOld, s.dst.spikes)
+            mask = (torch.where(s.src.spikesOld)[0].view(-1, 1), torch.where(s.dst.spikes)[0].view(1, -1))
             s.W[mask] += self.speed
             s.W[mask] = torch.clip(s.W[mask], 0.0, 1.0)
 
