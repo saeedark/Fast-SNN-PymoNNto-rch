@@ -132,7 +132,7 @@ if PLOT:
 
 #print(f"Start time: {time.time()}")
 #start = time.time()
-#nest.Simulate(1.0)
+nest.Simulate(1.0)
 #print(time.time()-start)
 #print(f"End time: {time.time()}")
 

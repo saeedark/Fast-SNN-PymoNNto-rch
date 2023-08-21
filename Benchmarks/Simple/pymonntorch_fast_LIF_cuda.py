@@ -28,16 +28,16 @@ class SpikeGeneration(Behavior):
 
 class Input(Behavior):
     def initialize(self, neurons):
-        self.strength = self.parameter('strength', None)
         for s in neurons.synapses('afferent', 'GLU'):
             s.W = s.matrix('random')
-            s.W /= torch.sum(s.W, axis=0) #normalize during initialization
+            s.W = s.W / SIZE
+            # s.W /= torch.sum(s.W, axis=0) #normalize during initialization
 
     def forward(self, neurons):
         neurons.voltage += neurons.vector('random')
         for s in neurons.synapses('afferent', 'GLU'):
             input = torch.sum(s.W[s.src.spikes], axis=0)
-            s.dst.voltage += input * self.strength
+            s.dst.voltage += input
 
 
 class STDP(Behavior):

@@ -32,16 +32,15 @@ w = clip(w + spiked_pre * STDP_SPEED, 0.0, 1.0)
 S = Synapses(N, N, synaptic_model, on_pre=pre, on_post=post)
 
 S.connect()
-S.w = 'rand()/15000*2' #initialize
+S.w = 'rand()/SIZE' #initialize
 #S.w /= sum(S.w, axis=0) #normalize
 
 if PLOT:
     M = SpikeMonitor(N)
 
 
-start = time.time()
-run(DURATION*ms, report='text')
-print("simulation time: ", time.time()-start)
+run(DURATION*ms, report=REPORT_FUNC)
+
 
 if PLOT:
     plot(M.t/ms, M.i, '.')

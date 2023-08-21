@@ -29,8 +29,8 @@ w = clip(w + spiked_pre * STDP_SPEED, 0.0, 1.0)
 S = Synapses(N, N, synaptic_model, on_pre=pre, on_post=post)
 
 S.connect()
-S.w = 'rand()' #initialize
-S.w /= sum(S.w, axis=0) #normalize
+S.w = 'rand()/SIZE' #initialize
+#S.w /= sum(S.w, axis=0) #normalize
 
 if PLOT:
     M = SpikeMonitor(N)

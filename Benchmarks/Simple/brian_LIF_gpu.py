@@ -1,11 +1,20 @@
 from brian2 import *
-import brian2genn
 import time
+import platform
 from globparams import *
-set_device('genn', use_GPU=True, debug=True)
+import brian2cuda
+#import brian2genn
+#set_device('genn', use_GPU=True, debug=True)
+set_device("cuda_standalone", clean=True)
 
 defaultclock.dt = 1*ms
 prefs.core.default_float_dtype = float32
+
+if platform.node() == 'saeed-Swift-SF315-51G':
+    prefs.devices.cuda_standalone.cuda_backend.detect_gpus = False
+    prefs.devices.cuda_standalone.cuda_backend.gpu_id = 0
+    prefs.devices.cuda_standalone.cuda_backend.compute_capability = 6.1
+    prefs.devices.cuda_standalone.default_functions_integral_convertion = np.float32
 
 vt = 6.1
 vr = 0.0
@@ -38,16 +47,14 @@ w = clip(w + spiked_pre * STDP_SPEED, 0.0, 1.0)
 S = Synapses(N, N, synaptic_model, on_pre=pre, on_post=post)
 
 S.connect()
-S.w = 'rand()' #initialize
-S.w /= sum(S.w, axis=0) #normalize
+S.w = 'rand()/SIZE' #initialize
+#S.w /= sum(S.w, axis=0) #normalize
 
 if PLOT:
     M = SpikeMonitor(N)
 
 
-start = time.time()
-run(DURATION*ms, report='text')
-print("simulation time: ", time.time() - start)
+run(DURATION*ms, report=REPORT_FUNC)
 
 if PLOT:
     plot(M.t/ms, M.i, '.')

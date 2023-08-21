@@ -27,7 +27,8 @@ class Input(Behavior):
     def initialize(self, neurons):
         for s in neurons.synapses(afferent, 'GLU'):
             s.W = s.matrix('random')
-            s.W /= np.sum(s.W, axis=0) #normalize during initialization
+            s.W = s.W / SIZE
+            # s.W /= np.sum(s.W, axis=0) #normalize during initialization
 
     def iteration(self, neurons):
         neurons.voltage += neurons.vector('random')

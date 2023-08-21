@@ -24,16 +24,16 @@ class SpikeGeneration(Behavior):
 
 class Input(Behavior):
     def initialize(self, neurons):
-        self.strength = self.parameter('strength')
         for s in neurons.synapses(afferent, 'GLU'):
             s.W = s.matrix('random')
-            s.W /= np.sum(s.W, axis=0)##################################
+            s.W = s.W / SIZE
+            # s.W /= np.sum(s.W, axis=0)##################################
 
     def iteration(self, neurons):
         neurons.voltage += neurons.vector('random')
         for s in neurons.synapses(afferent, 'GLU'):
             input = s.W.dot(s.src.spikes)
-            s.dst.voltage += input * self.strength
+            s.dst.voltage += input
 
 
 class STDP(Behavior):
