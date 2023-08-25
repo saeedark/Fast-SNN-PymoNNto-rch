@@ -2,16 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import csv
 
-fig, ax = plt.subplots(1, 3)
-
-fig.set_figwidth(12)
-fig.set_figheight(4)
-
 ekw = dict(ecolor=(0, 0, 0, 1.0), lw=1, capsize=3, capthick=1)
 
 color1 = (0, 176/255, 80/255, 1)
 color2 = (1/255, 127/255, 157/255, 1)
-color3 = (253/255, 97/255, 0, 1)
+color3 = (120/255,110/255,120/255,1)#(117/255,117/255,117/255,1)#(253/255, 97/255, 0, 1)
 
 #color11 = (0, 176/255, 80/255, 0.7)
 color11 = (0, 176/255*0.5, 80/255*0.5, 0.7)
@@ -19,7 +14,7 @@ color11 = (0, 176/255*0.5, 80/255*0.5, 0.7)
 
 lookup = {'brian_LIF.py': ['Brian2', color2],
           'brian_LIF_cpp.py': ['Brian2 C++', color2],
-          'brian_LIF_gpu.py': ['Brian2 Cuda', color2],
+          'brian_LIF_gpu.py': ['Brian2 GPU', color2],
           'nest_native_LIF.py': ['Nest', color3],
           'pymonnto_fast_LIF.py': ['PymoNNto', color11],
           'pymonnto_slow_LIF.py': ['PymoNNto', color11],# naive
@@ -30,7 +25,7 @@ lookup = {'brian_LIF.py': ['Brian2', color2],
 
           'brian_izh.py': ['Brian2', color2],
           'brian_izh_cpp.py': ['Brian2 C++', color2],
-          'brian_izh_cuda.py': ['Brian2 Cuda', color2],
+          'brian_izh_cuda.py': ['Brian2 GPU', color2],
           'pymonnto_izh.py': ['PymoNNto', color11],
           'pymonntorch_izh_cpu.py': ['PymoNNtorch CPU', color1],
           'pymonntorch_izh_cuda.py': ['PymoNNtorch GPU', color1],
@@ -51,7 +46,11 @@ def load(filename):
     return sim_col, np.array(measurements)[:,1:] #remove enumeration in first column
 
 
-axis = ax[2]
+fig, ax = plt.subplots(1, 1)
+fig.set_figwidth(4)#12
+fig.set_figheight(4)
+
+axis = ax#ax[2]
 sim_col, data = load('Results/Swift-SF315-51G/Simple2.csv')
 measurements = np.mean(data, axis=0)
 err = np.std(data, axis=0)
@@ -67,16 +66,30 @@ for i, s, m, e, c in zip(index, simulators, measurements, err, colors):
 
 axis.tick_params(axis='both', which='both', length=0)
 axis.set_yticks([], [])
-axis.set_ylim([0, np.max(measurements)*1.3])
+axis.set_ylim([0, np.max(measurements)*1.5])#1.3
 axis.set_xticks(np.array(index), simulators, rotation=30, ha="right")
 axis.spines[['left', 'right', 'top']].set_visible(False)
-axis.set_title('Simple\noptimized vs naive', fontweight='bold') #Simple LIF with\nOne Step STDP\n
+axis.set_title('Simple LIF with\nOne Step STDP', fontweight='bold') #Simple LIF with\nOne Step STDP\n optimized vs naive
 
 for xtick, color in zip(axis.get_xticklabels(), colors):
     xtick.set_color(color)
 
-axis.plot([3.5, 3.5], [0.0, 50], '--', c='black', linewidth=1)
+axis.plot([3.5, 3.5], [0.0, 60], '--', c='black', linewidth=1)
 
+axis.text(2, 55, 'optimized', size=12, ha='center', va='bottom', color=(0,0,0,1), fontweight='bold')
+axis.text(5, 55, 'naive', size=12, ha='center', va='bottom', color=(0,0,0,1), fontweight='bold')
+
+fig.tight_layout()
+#plt.savefig('filename.png', dpi=600)
+plt.show()
+
+
+
+
+
+fig, ax = plt.subplots(1, 2)
+fig.set_figwidth(8)#12
+fig.set_figheight(4)
 
 
 axis = ax[0]
@@ -137,8 +150,13 @@ for xtick, color in zip(axis.get_xticklabels(), colors):
 
 
 
+ax[0].text(x=-0.2, y=10, s='A', size=20, weight='bold')
+ax[1].text(x=-0.2, y=4.75, s='B', size=20, weight='bold')
+#ax[0].text(x=100, y=0, s=' ', size=20, weight='bold')
+
 #ax[0].set_ylabel('compute time')
 
 fig.tight_layout()
+#plt.savefig('filename.png', dpi=600)
 plt.show()
 
