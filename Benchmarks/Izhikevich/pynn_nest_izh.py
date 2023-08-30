@@ -5,7 +5,7 @@ import time
 from globparams import *
 
 sim.setup(timestep=1, min_delay=1, max_delay=1)
-rng = NumpyRNG(seed=1)
+rng = NumpyRNG()
 
 cell_type = sim.Izhikevich(a=A, b=B, c=C, d=D, i_offset=OFFSET * 10**(-3))
 
