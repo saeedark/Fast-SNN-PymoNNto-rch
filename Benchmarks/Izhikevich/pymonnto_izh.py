@@ -38,7 +38,7 @@ class Izhikevich(Behavior):
         n.v[n.spikes] = self.c
         n.u[n.spikes] += self.d
 
-        n.v += 0.04 * n.v**2 + 5 * n.v + 140 - n.u + n.I * n.network.dt
+        n.v += (0.04 * n.v**2 + 5 * n.v + 140 - n.u + n.I) * n.network.dt
         n.u += self.a * (self.b * n.v - n.u) * n.network.dt
 
 

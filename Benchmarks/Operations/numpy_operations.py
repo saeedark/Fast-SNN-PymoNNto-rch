@@ -38,7 +38,7 @@ for i in range(1):
     for i in range(steps):
         np.sum(W1[:, src], axis=1)
     t2 = (time.time()-start)/steps*1000
-    print('  np.sum(W1[:, s], axis=1):', t2, 'ms', t1/t2, 'x faster')
+    print('  np.sum(W1[:, s], axis=1):', t2, 'ms', t1/t2, 'x ratio')
     measurements.append(t2)
 
 
@@ -49,7 +49,7 @@ for i in range(1):
     for i in range(steps):
         W2.T.dot(src)
     t3 = (time.time()-start)/steps*1000
-    print('  W2.T.dot(s):', t3, 'ms', t1/t3, 'x faster')
+    print('  W2.T.dot(s):', t3, 'ms', t1/t3, 'x ratio')
     measurements.append(t3)
 
 
@@ -57,7 +57,7 @@ for i in range(1):
     for i in range(steps):
         np.sum(W2[src], axis=0)
     t4 = (time.time()-start)/steps*1000
-    print('  np.sum(W2[s], axis=0):', t4, 'ms', t1/t4, 'x faster')
+    print('  np.sum(W2[s], axis=0):', t4, 'ms', t1/t4, 'x ratio')
     measurements.append(t4)
 
 
@@ -80,7 +80,7 @@ for i in range(1):
     for i in range(steps):
         W1[dst[:, None] * src[None, :]] += 1
     t2 = (time.time()-start)/steps*1000
-    print('  W1[d[:, None] * s[None, :]] += 1:', t2, 'ms', t1/t2, 'x faster')
+    print('  W1[d[:, None] * s[None, :]] += 1:', t2, 'ms', t1/t2, 'x ratio')
     measurements.append(t2)
 
 
@@ -88,7 +88,7 @@ for i in range(1):
     for i in range(steps):
         W1[np.ix_(dst, src)] += 1
     t3 = (time.time()-start)/steps*1000
-    print('  W1[np.ix_(d, s)] += 1:', t3, 'ms', t1/t3, 'x faster')
+    print('  W1[np.ix_(d, s)] += 1:', t3, 'ms', t1/t3, 'x ratio')
     measurements.append(t3)
 
     #same but with W2 (SxD) instead of W1 (DxS):
@@ -108,7 +108,7 @@ for i in range(1):
     for i in range(steps):
         W2[src[:, None] * dst[None, :]] += 1
     t2 = (time.time()-start)/steps*1000
-    print('  W2[s[:, None] * d[None, :]] += 1:', t2, 'ms', t1/t2, 'x faster')
+    print('  W2[s[:, None] * d[None, :]] += 1:', t2, 'ms', t1/t2, 'x ratio')
     measurements.append(t2)
 
 
@@ -116,7 +116,7 @@ for i in range(1):
     for i in range(steps):
         W2[np.ix_(src, dst)] += 1
     t3 = (time.time()-start)/steps*1000
-    print('  W2[np.ix_(s, d)] += 1:', t3, 'ms', t1/t3, 'x faster')
+    print('  W2[np.ix_(s, d)] += 1:', t3, 'ms', t1/t3, 'x ratio')
     measurements.append(t3)
 
 
@@ -136,9 +136,9 @@ for i in range(1):
 
 
 
-
+    """
     ###########################################
-    print('\nAdvanced STDP...')
+    # print('\nAdvanced STDP...')
     ###########################################
 
     '''
@@ -166,12 +166,12 @@ for i in range(1):
     sTrace = np.zeros(5000)
     dTrace = np.zeros(10000)
 
-    sTrace = (sTrace + s) * 0.9
-    dTrace = (dTrace + d) * 0.9
+    sTrace = (sTrace + src) * 0.9
+    dTrace = (dTrace + dst) * 0.9
     stMask = sTrace>0.01
     dtMask = dTrace>0.01
-    W1[np.ix_(d, stMask)] += sTrace[None, stMask]
-    W1[np.ix_(dtMask, s)] -= dTrace[dtMask, None]
+    W1[np.ix_(dst, stMask)] += sTrace[None, stMask]
+    W1[np.ix_(dtMask, src)] -= dTrace[dtMask, None]
 
     '''
     Note that the trace variables have to be converted to binary masks for indexing. 
@@ -184,7 +184,7 @@ for i in range(1):
     #print('\nClipping...')
     ###########################################
 
-    mask = np.ix_(d, s)
+    mask = np.ix_(dst, src)
     W1[mask] += 1
     W1[mask] = np.clip(W1[mask], 0.1, 10.0)
 
@@ -210,7 +210,7 @@ for i in range(1):
     eff_sum = np.sum(W1, axis=0)
 
     # STDP sparse update sum
-    eff_sum[s] += np.sum(W1[:, s], axis=0)
+    eff_sum[src] += np.sum(W1[:, src], axis=0)
 
     # Norm
     mask = eff_sum > 1
@@ -225,7 +225,7 @@ for i in range(1):
     We are using the DxS synapse matrix here. For the SxD version, we need to swap the afferent and efferent operations.
     '''
 
-
+    """
     ###########################################
     print('\nReset operation...')
     ###########################################
@@ -255,7 +255,7 @@ for i in range(1):
     for i in range(steps):
         voltage = np.zeros(5000)
     t2 = (time.time()-start)/steps*1000
-    print('  voltage = np.zeros(5000, dtype=dtype):', t2, 'ms', t1/t2, 'x faster')
+    print('  voltage = np.zeros(5000, dtype=dtype):', t2, 'ms', t1/t2, 'x ratio')
     measurements.append(t2)
 
     '''
@@ -267,7 +267,7 @@ for i in range(1):
     for i in range(steps):
         voltage.fill(0)
     t3 = (time.time()-start)/steps*1000
-    print('  voltage.fill(0):', t3, 'ms', t1/t3, 'x faster')
+    print('  voltage.fill(0):', t3, 'ms', t1/t3, 'x ratio')
     measurements.append(t3)
 
     '''
@@ -285,7 +285,7 @@ for i in range(1):
     start = time.time()
     for i in range(steps):
         #W1[np.ix_(d, s)] += 1
-        np.sum(W2[s], axis=0)
+        np.sum(W2[src], axis=0)
     t1 = (time.time()-start)/steps*1000
     print('  float64:', t1, 'ms')
     measurements.append(t1)
@@ -295,9 +295,9 @@ for i in range(1):
     start = time.time()
     for i in range(steps):
         #W1[np.ix_(d, s)] += 1
-        np.sum(W2[s], axis=0)
+        np.sum(W2[src], axis=0)
     t2 = (time.time()-start)/steps*1000
-    print('  float32:', t2, 'ms', t1/t2, 'x faster')
+    print('  float32:', t2, 'ms', t1/t2, 'x ratio')
     measurements.append(t2)
 
 
@@ -306,7 +306,7 @@ for i in range(1):
     start = time.time()
     for i in range(steps):
         #W1[np.ix_(d, s)] += 1
-        np.sum(W2[s], axis=0)
+        np.sum(W2[src], axis=0)
     t3 = (time.time()-start)/steps*1000
-    print('  float16:', t3, 'ms', t1/t3, 'x faster')
+    print('  float16:', t3, 'ms', t1/t3, 'x ratio')
     measurements.append(t3)
