@@ -93,7 +93,7 @@ NeuronGroup(
     },
 )
 
-if PLOT:
+if RECORD:
     net.NG.add_behavior(9, EventRecorder("spikes"), False)
 
 SynapseGroup(
@@ -114,8 +114,9 @@ start = time.time()
 net.simulate_iterations(DURATION)
 print("simulation time: ", time.time() - start)
 
+if RECORD:
+    print(f"Total spikes: {len(net['spikes.i', 0])}")
 
 if PLOT:
-    print(f"Total spikes: {len(net['spikes.i', 0])}")
     plt.plot(net["spikes.t", 0].to("cpu"), net["spikes.i", 0].to("cpu"), ".k")
     plt.show()

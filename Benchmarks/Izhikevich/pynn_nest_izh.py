@@ -45,7 +45,7 @@ noise = sim.standardmodels.electrodes.NoisyCurrentSource(
 
 pop1.inject(noise)
 
-if PLOT:
+if RECORD:
     pop1.record(["spikes"])
 
 start = time.time()
@@ -53,9 +53,11 @@ sim.run(DURATION)
 print("simulation time: ", time.time() - start)
 
 
-if PLOT:
+if RECORD:
     data = pop1.get_data().segments[0]
-    print(data.spiketrains)
+    print(f"Total spikes: {sum([len(i) for i in data.spiketrains])}")
+
+if PLOT:
     Figure(
         Panel(data.spiketrains, xlabel="Time (ms)", xticks=True)
     ).show()

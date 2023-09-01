@@ -125,7 +125,7 @@ for i in range(num_neurons):
 #ng.set({"amplitude_times": times, "amplitude_values": nest.random.uniform(min=0.0, max=1.0)})
 #nest.Connect(ng, neurons, "one_to_one")
 
-if PLOT:
+if RECORD:
     sr = nest.Create("spike_recorder")
     nest.Connect(neurons, sr)
 
@@ -139,6 +139,10 @@ nest.Simulate(1.0)
 start = time.time()
 nest.Simulate(simulation_time-1)
 print("simulation time: ", time.time() - start)
+
+if RECORD:
+    spike_rec=nest.GetStatus(sr, keys='events')[0]
+    print(f"Total spikes: {len(spike_rec['times'])}")
 
 if PLOT:
     spike_rec=nest.GetStatus(sr, keys='events')[0]

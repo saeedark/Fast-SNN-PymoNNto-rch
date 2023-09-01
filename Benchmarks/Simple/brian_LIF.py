@@ -32,13 +32,16 @@ S.connect()
 S.w = 'rand()/SIZE' #initialize
 #S.w /= sum(S.w, axis=0) #normalize
 
-if PLOT:
+if RECORD:
     M = SpikeMonitor(N)
 
 
 start = time.time()
 run(DURATION*ms, report='text')
 print("simulation time: ", time.time()-start)
+
+if RECORD:
+    print(f"Total spikes: {len(M.i)}")
 
 if PLOT:
     plot(M.t/ms, M.i, '.')

@@ -1,5 +1,6 @@
 import sys
 PLOT = not 'no_plot' in sys.argv
+RECORD = not 'no_record' in sys.argv
 
 DURATION = 100
 SIZE = 7500
