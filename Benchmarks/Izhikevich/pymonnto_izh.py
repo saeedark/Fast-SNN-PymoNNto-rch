@@ -17,7 +17,7 @@ settings = {"dtype": float32, "synapse_mode": SxD}
 
 class TimeResolution(Behavior):
     def initialize(self, n):
-        n.dt = self.parameter("dt", 1)
+        n.dt = self.parameter("dt", 1.0)
 
 
 class Izhikevich(Behavior):
@@ -28,18 +28,33 @@ class Izhikevich(Behavior):
         self.d = self.parameter("d")
         self.threshold = self.parameter("threshold")
 
-        n.u = n.vector(f"normal({U_MEAN}, {U_STD})")
-        n.v = n.vector(f"normal({V_MEAN}, {U_STD})")
+        n.v = V_STD * n.vector("normal") + V_MEAN #n.vector(f"normal({V_MEAN}, {U_STD})")
+        n.u = U_STD * n.vector("normal") + U_MEAN #n.vector(f"normal({U_MEAN}, {U_STD})")
+
+        #print(np.min(n.u),np.max(n.u),np.mean(n.u),np.var(n.u))
+        #import matplotlib.pyplot as plt
+        #plt.hist(n.u, bins=100)
+        #plt.show()
+
         n.spikes = n.vector("bool")
 
     def iteration(self, n):
-        n.spikes = n.v > self.threshold
+        #n.vector(f"normal({NOISE_MEAN}, {NOISE_STD})")
+
+        n.spikes = (n.v >= self.threshold) ### >=threshold
 
         n.v[n.spikes] = self.c
         n.u[n.spikes] += self.d
 
-        n.v += (0.04 * n.v**2 + 5 * n.v + 140 - n.u + n.I) * n.network.dt
-        n.u += self.a * (self.b * n.v - n.u) * n.network.dt
+        n.v_old = n.v.copy()
+        n.u_old = n.u.copy()
+
+        #n.vector("normal") * NOISE_STD + NOISE_MEAN
+
+        n.v += (0.04 * n.v_old**2.0 + 5.0 * n.v + 140.0 - n.u_old + n.I) / n.network.dt ### /dt
+        n.u += (self.a * (self.b * n.v_old - n.u_old)) / n.network.dt ### /dt
+
+
 
 
 class Dendrite(Behavior):
@@ -49,9 +64,12 @@ class Dendrite(Behavior):
 
     def iteration(self, n):
         n.I.fill(self.offset)
+        n.I += n.vector("normal") * NOISE_STD + NOISE_MEAN
+
         for s in n.afferent_synapses["GLU"]:
             n.I += s.I
-        n.I + n.vector(f"normal({NOISE_MEAN}, {NOISE_STD})")
+        ######## n.I + n.vector(f"normal({NOISE_MEAN}, {NOISE_STD})")
+        #
 
 
 class STDP(Behavior):
@@ -67,8 +85,8 @@ class STDP(Behavior):
     def iteration(self, s):
         src_spikes = s.src.spikes
         dst_spikes = s.dst.spikes
-        s.src_trace += src_spikes - s.src_trace / self.pre_tau * s.network.dt
-        s.dst_trace += dst_spikes - s.dst_trace / self.post_tau * s.network.dt
+        s.src_trace += src_spikes - s.src_trace / self.pre_tau / s.network.dt
+        s.dst_trace += dst_spikes - s.dst_trace / self.post_tau / s.network.dt
         s.W[src_spikes] -= (
             s.dst_trace[None, ...] * self.a_minus * (s.W[src_spikes] - W_MIN)
         )
@@ -82,10 +100,11 @@ class DiracInput(Behavior):
     def initialize(self, s):
         self.strength = self.parameter("strength")
         s.I = s.dst.vector()
-        s.W = s.matrix("random")
+        s.W = s.matrix("random") * W_MAX #####
         # np.fill_diagonal(s.W, 0)
 
     def iteration(self, s):
+        #s.I = s.W.dot(s.src.spikes) * self.strength
         s.I = np.sum(s.W[s.src.spikes], axis=0) * self.strength
 
 
