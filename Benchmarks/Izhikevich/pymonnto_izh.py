@@ -28,28 +28,18 @@ class Izhikevich(Behavior):
         self.d = self.parameter("d")
         self.threshold = self.parameter("threshold")
 
-        n.v = V_STD * n.vector("normal") + V_MEAN #n.vector(f"normal({V_MEAN}, {U_STD})")
-        n.u = U_STD * n.vector("normal") + U_MEAN #n.vector(f"normal({U_MEAN}, {U_STD})")
-
-        #print(np.min(n.u),np.max(n.u),np.mean(n.u),np.var(n.u))
-        #import matplotlib.pyplot as plt
-        #plt.hist(n.u, bins=100)
-        #plt.show()
-
+        n.v = V_STD * n.vector("normal") + V_MEAN
+        n.u = U_STD * n.vector("normal") + U_MEAN
         n.spikes = n.vector("bool")
 
     def iteration(self, n):
-        #n.vector(f"normal({NOISE_MEAN}, {NOISE_STD})")
-
         n.spikes = (n.v >= self.threshold) ### >=threshold
 
         n.v[n.spikes] = self.c
         n.u[n.spikes] += self.d
 
-        n.v_old = n.v.copy()
-        n.u_old = n.u.copy()
-
-        #n.vector("normal") * NOISE_STD + NOISE_MEAN
+        n.v_old = n.v.copy()######
+        n.u_old = n.u.copy()######
 
         n.v += (0.04 * n.v_old**2.0 + 5.0 * n.v + 140.0 - n.u_old + n.I) / n.network.dt ### /dt
         n.u += (self.a * (self.b * n.v_old - n.u_old)) / n.network.dt ### /dt
@@ -68,8 +58,6 @@ class Dendrite(Behavior):
 
         for s in n.afferent_synapses["GLU"]:
             n.I += s.I
-        ######## n.I + n.vector(f"normal({NOISE_MEAN}, {NOISE_STD})")
-        #
 
 
 class STDP(Behavior):
@@ -104,7 +92,6 @@ class DiracInput(Behavior):
         # np.fill_diagonal(s.W, 0)
 
     def iteration(self, s):
-        #s.I = s.W.dot(s.src.spikes) * self.strength
         s.I = np.sum(s.W[s.src.spikes], axis=0) * self.strength
 
 
