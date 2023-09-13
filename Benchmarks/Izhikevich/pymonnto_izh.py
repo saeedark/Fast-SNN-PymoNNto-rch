@@ -33,16 +33,16 @@ class Izhikevich(Behavior):
         n.spikes = n.vector("bool")
 
     def iteration(self, n):
-        n.spikes = (n.v >= self.threshold) ### >=threshold
+        n.spikes = (n.v >= self.threshold) 
 
         n.v[n.spikes] = self.c
         n.u[n.spikes] += self.d
 
-        n.v_old = n.v.copy()######
-        n.u_old = n.u.copy()######
+        dv = (0.04 * n.v**2.0 + 5.0 * n.v + 140.0 - n.u + n.I)
+        du = (self.a * (self.b * n.v - n.u))
 
-        n.v += (0.04 * n.v_old**2.0 + 5.0 * n.v + 140.0 - n.u_old + n.I) / n.network.dt ### /dt
-        n.u += (self.a * (self.b * n.v_old - n.u_old)) / n.network.dt ### /dt
+        n.v += dv * n.network.dt 
+        n.u += du * n.network.dt 
 
 
 
@@ -73,8 +73,8 @@ class STDP(Behavior):
     def iteration(self, s):
         src_spikes = s.src.spikes
         dst_spikes = s.dst.spikes
-        s.src_trace += src_spikes - s.src_trace / self.pre_tau / s.network.dt
-        s.dst_trace += dst_spikes - s.dst_trace / self.post_tau / s.network.dt
+        s.src_trace += src_spikes - s.src_trace / self.pre_tau * s.network.dt
+        s.dst_trace += dst_spikes - s.dst_trace / self.post_tau * s.network.dt
         s.W[src_spikes] -= (
             s.dst_trace[None, ...] * self.a_minus * (s.W[src_spikes] - W_MIN)
         )
@@ -88,7 +88,7 @@ class DiracInput(Behavior):
     def initialize(self, s):
         self.strength = self.parameter("strength")
         s.I = s.dst.vector()
-        s.W = s.matrix("random") * W_MAX #####
+        s.W = s.matrix("random") * W_MAX + W_MIN
         # np.fill_diagonal(s.W, 0)
 
     def iteration(self, s):

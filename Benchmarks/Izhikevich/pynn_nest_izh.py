@@ -13,13 +13,12 @@ pop1 = sim.Population(size=SIZE, cellclass=cell_type, label="pop1")
 
 stdp_model = sim.STDPMechanism(
     timing_dependence=sim.SpikePairRule(
-        tau_plus=TRACE_TAU,
-        tau_minus=TRACE_TAU,
+        tau_plus=TRACE_TAU * 10**(-3),
+        tau_minus=TRACE_TAU * 10**(-3),
         A_plus=A_PLUS,
         A_minus=A_MINUS,
     ),
     weight_dependence=sim.MultiplicativeWeightDependence(w_min=W_MIN, w_max=W_MAX * DIRAC_STRENGTH),
-    # weight_dependence=sim.AdditiveWeightDependence(w_min=W_MIN, w_max=W_MAX),
     voltage_dependence=None,
     dendritic_delay_fraction=1.0,
     weight=RandomDistribution("uniform", (W_MIN, W_MAX * DIRAC_STRENGTH)),

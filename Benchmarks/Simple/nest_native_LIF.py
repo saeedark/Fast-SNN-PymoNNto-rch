@@ -18,7 +18,7 @@ neuron simple_neuron:
         v mV = 0 mV
 
     equations:
-        v' = (I_e/pA * mV - v * decay) / ms
+        v' = (-v * decay) / ms
 
     parameters:
         vt real = 6.1
@@ -35,13 +35,14 @@ neuron simple_neuron:
         spike
 
     update:
-        integrate_odes()
-        v += spikes*input_strength
-
         # threshold crossing
         if v >= vt * mV:
             v = vr * mV
             emit_spike()
+
+        integrate_odes()
+
+        v += I_e/pA * mV + spikes * input_strength
 """
 
 simple_stdp_synapse = """
@@ -112,8 +113,8 @@ nest.Connect(neurons, neurons, 'all_to_all', synapse_params)
 
 #add voltage fluctuations to neurons
 for i in range(num_neurons):
-    times = list(np.arange(1.0, 100.0, 1.0))
-    values = list(np.random.rand(int(simulation_time)-1))
+    times = list(np.arange(1.0, 101.0, 1.0))
+    values = list(np.random.rand(int(simulation_time)))
     ng = nest.Create('step_current_generator')
     ng.set({"amplitude_times": times, "amplitude_values": values})
     nest.Connect(ng, neurons[i])
@@ -132,16 +133,17 @@ if PLOT:
 
 #print(f"Start time: {time.time()}")
 #start = time.time()
-nest.Simulate(1.0)
+nest.Simulate(1/dt)
 #print(time.time()-start)
 #print(f"End time: {time.time()}")
 
 start = time.time()
-nest.Simulate(simulation_time-1)
+nest.Simulate(simulation_time - 1/dt)
 print("simulation time: ", time.time() - start)
 
 if PLOT:
     spike_rec=nest.GetStatus(sr, keys='events')[0]
+    print(f"Total spikes: {len(spike_rec['times'])}")
     plt.plot(spike_rec['times'], spike_rec['senders'], '.k')
     plt.ylabel("neurons")
     plt.xlabel("t")
