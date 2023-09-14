@@ -13,8 +13,8 @@ pop1 = sim.Population(size=SIZE, cellclass=cell_type, label="pop1")
 
 stdp_model = sim.STDPMechanism(
     timing_dependence=sim.SpikePairRule(
-        tau_plus=TRACE_TAU,
-        tau_minus=TRACE_TAU,
+        tau_plus=TRACE_TAU * 10**(-3),
+        tau_minus=TRACE_TAU * 10**(-3),
         A_plus=A_PLUS,
         A_minus=A_MINUS,
     ),

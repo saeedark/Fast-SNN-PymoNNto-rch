@@ -25,13 +25,16 @@ class Izhikevich(Behavior):
         n.spikes = n.vector(dtype=torch.bool)
 
     def forward(self, n):
-        n.spikes = n.v > self.threshold
+        n.spikes = n.v >= self.threshold
 
         n.v[n.spikes] = self.c
         n.u[n.spikes] += self.d
 
-        n.v += (0.04 * n.v**2 + 5 * n.v + 140 - n.u + n.I) * n.network.dt
-        n.u += self.a * (self.b * n.v - n.u) * n.network.dt
+        dv = (0.04 * n.v**2 + 5 * n.v + 140 - n.u + n.I)
+        du = self.a * (self.b * n.v - n.u)
+
+        n.v += dv * n.network.dt
+        n.u += du * n.network.dt
 
 
 class Dendrite(Behavior):
@@ -74,7 +77,7 @@ class DiracInput(Behavior):
     def initialize(self, s):
         self.strength = self.parameter("strength", None)
         s.I = s.dst.vector()
-        s.W = s.matrix("random")
+        s.W = s.matrix("random") * W_MAX + W_MIN
         # s.W.fill_diagonal_(0)
 
     def forward(self, s):
