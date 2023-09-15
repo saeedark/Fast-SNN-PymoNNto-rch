@@ -29,7 +29,6 @@ neuron simple_neuron:
 
     input:
         spikes mV <- spike
-        I_e pA <- continuous
 
     output:
         spike
@@ -42,7 +41,7 @@ neuron simple_neuron:
 
         integrate_odes()
 
-        v += I_e/pA * mV + spikes * input_strength
+        v += random_uniform(0,1) * mV + spikes * input_strength
 """
 
 simple_stdp_synapse = """
@@ -112,12 +111,13 @@ nest.Connect(neurons, neurons, 'all_to_all', synapse_params)
 
 
 #add voltage fluctuations to neurons
-for i in range(num_neurons):
-    times = list(np.arange(1.0, 101.0, 1.0))
-    values = list(np.random.rand(int(simulation_time)))
-    ng = nest.Create('step_current_generator')
-    ng.set({"amplitude_times": times, "amplitude_values": values})
-    nest.Connect(ng, neurons[i])
+
+# for i in range(num_neurons):
+#     times = list(np.arange(1.0, 101.0, 1.0))
+#     values = list(np.random.rand(int(simulation_time)))
+#     ng = nest.Create('step_current_generator')
+#     ng.set({"amplitude_times": times, "amplitude_values": values})
+#     nest.Connect(ng, neurons[i])
 
 #random noise
 #times = list(np.arange(1.0, 100.0, 1.0))
