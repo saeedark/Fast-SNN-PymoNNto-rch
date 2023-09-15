@@ -54,7 +54,7 @@ class Dendrite(Behavior):
         n.I.fill(self.offset)
         for s in n.afferent_synapses["GLU"]:
             n.I += s.I
-        n.I + n.vector(f"normal({NOISE_MEAN}, {NOISE_STD})")
+        n.I += n.vector(f"normal({NOISE_MEAN}, {NOISE_STD})")
 
 
 class STDP(Behavior):
