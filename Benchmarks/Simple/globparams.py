@@ -2,7 +2,7 @@ import sys
 PLOT = not 'no_plot' in sys.argv
 
 DURATION = 100
-SIZE = int(sys.argv[1])
+SIZE = 7500
 
 VT = 6.1
 VR = 0.0
