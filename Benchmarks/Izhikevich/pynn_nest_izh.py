@@ -11,6 +11,9 @@ cell_type = sim.Izhikevich(a=A, b=B, c=C, d=D, i_offset=OFFSET * 10**(-3))
 
 pop1 = sim.Population(size=SIZE, cellclass=cell_type, label="pop1")
 
+w_min = W_MIN * DIRAC_STRENGTH * 10**(-3)
+w_max = W_MAX * DIRAC_STRENGTH * 10**(-3)
+
 stdp_model = sim.STDPMechanism(
     timing_dependence=sim.SpikePairRule(
         tau_plus=TRACE_TAU,
@@ -18,11 +21,10 @@ stdp_model = sim.STDPMechanism(
         A_plus=A_PLUS,
         A_minus=A_MINUS,
     ),
-    weight_dependence=sim.MultiplicativeWeightDependence(w_min=W_MIN, w_max=W_MAX * DIRAC_STRENGTH),
-    # weight_dependence=sim.AdditiveWeightDependence(w_min=W_MIN, w_max=W_MAX),
+    weight_dependence=sim.MultiplicativeWeightDependence(w_min=w_min, w_max=w_max),
     voltage_dependence=None,
     dendritic_delay_fraction=1.0,
-    weight=RandomDistribution("uniform", (W_MIN, W_MAX * DIRAC_STRENGTH)),
+    weight=RandomDistribution("uniform", (w_min, w_max)),
     delay=None,
 )
 
