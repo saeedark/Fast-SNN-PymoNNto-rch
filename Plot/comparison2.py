@@ -32,6 +32,8 @@ lookup = {'brian_LIF.py': ['Brian2', color2],
           'pynn_nest_izh.py': ['Nest (PyNN)', color3]
           }
 
+
+
 def load(filename):
     sim_col = []
     measurements = []
@@ -50,23 +52,25 @@ fig, ax = plt.subplots(1, 1)
 fig.set_figwidth(4)#12
 fig.set_figheight(4)
 
-axis = ax#ax[2]
+axis = ax
 sim_col, data = load('Results/Swift-SF315-51G/Simple2.csv')
-measurements = np.mean(data, axis=0)
-measurements2 = np.max(measurements)/measurements
 
-err = measurements*0#np.std(data, axis=0)
+avg_measurements = np.mean(data, axis=0)
+avg_speed_ups = np.max(avg_measurements)/avg_measurements
+speed_up_err = np.std(np.max(avg_measurements)/data, axis=0)
+
+text_gap = np.max(avg_speed_ups)*0.01
 
 simulators = [s for s, c in sim_col]
 colors = [c for s, c in sim_col]
 index = list(range(len(sim_col)))
 index = [1,2,3,5,6,4]#5,6,7, 2,3,1
 
-text_gap = np.max(measurements)*0.01
-for i, s, m, e, c, x in zip(index, simulators, measurements, err, colors, measurements2):
-    axis.plot([i-0.4,i+0.4],[m*14,m*14], color='red',)
-    axis.bar(i, x, width=0.8, color=c, yerr=e, error_kw=ekw)
-    axis.text(i, x+e+text_gap, '{0:.2f}'.format(x)+'x', ha='center', va='bottom', color=c)  # , color='gray'
+
+for i, s, m, e, c in zip(index, simulators, avg_speed_ups, speed_up_err, colors):
+    #axis.plot([i-0.4,i+0.4],[m*14,m*14], color='red',)
+    axis.bar(i, m, width=0.8, color=c, yerr=e, error_kw=ekw)
+    axis.text(i, m+e+text_gap, '{0:.1f}'.format(m)+'x', ha='center', va='bottom', color=c)  # , color='gray'
 
 axis.tick_params(axis='both', which='both', length=0)
 axis.set_yticks([], [])
@@ -78,13 +82,13 @@ axis.set_title('Simple LIF with\nOne Step STDP', fontweight='bold') #Simple LIF 
 for xtick, color in zip(axis.get_xticklabels(), colors):
     xtick.set_color(color)
 
-axis.plot([3.5, 3.5], [0.0, 60], '--', c='black', linewidth=1)
+axis.plot([3.5, 3.5], [0.0, 850], '--', c='black', linewidth=1)
 
-axis.text(2, 55, 'optimized', size=12, ha='center', va='bottom', color=(0,0,0,1), fontweight='bold')
-axis.text(5, 55, 'naive', size=12, ha='center', va='bottom', color=(0,0,0,1), fontweight='bold')
+axis.text(2, 750, 'optimized', size=12, ha='center', va='bottom', color=(0,0,0,1), fontweight='bold')
+axis.text(5, 750, 'naive', size=12, ha='center', va='bottom', color=(0,0,0,1), fontweight='bold')
 
 fig.tight_layout()
-#plt.savefig('filename.png', dpi=600)
+plt.savefig('measurements_x2.png', dpi=600)
 plt.show()
 
 
@@ -99,9 +103,11 @@ fig.set_figheight(4)
 axis = ax[0]
 sim_col, data = load('Results/Swift-SF315-51G/Simple.csv')
 
-measurements = np.mean(data, axis=0)
-measurements = np.max(measurements)/measurements
-err = measurements*0#np.std(data, axis=0)
+avg_measurements = np.mean(data, axis=0)
+avg_speed_ups = np.max(avg_measurements)/avg_measurements
+speed_up_err = np.std(np.max(avg_measurements)/data, axis=0)
+
+text_gap = np.max(avg_speed_ups)*0.01
 
 #measurements = np.mean(data, axis=0)
 #err = np.std(data, axis=0)
@@ -110,15 +116,14 @@ colors = [c for s, c in sim_col]
 #index = list(range(len(sim_col)))
 index = [3,4,2,1,5,6,7]
 
-text_gap = np.max(measurements)*0.01
-for i, s, m, e, c in zip(index, simulators, measurements, err, colors):
+for i, s, m, e, c in zip(index, simulators, avg_speed_ups, speed_up_err, colors):
     axis.bar(i, m, width=0.8, color=c, yerr=e, error_kw=ekw)
-    axis.text(i, m + e+text_gap, '{0:.2f}'.format(m)+'x', ha='center', va='bottom', color=c)
+    axis.text(i, m + e+text_gap, '{0:.1f}'.format(m)+'x', ha='center', va='bottom', color=c)
 
 
 axis.tick_params(axis='both', which='both', length=0)
 axis.set_yticks([], [])
-axis.set_ylim([0, np.max(measurements)*1.3])
+axis.set_ylim([0, np.max(avg_speed_ups)*1.3])
 axis.set_xticks(index, simulators, rotation=30, ha="right")
 axis.spines[['left', 'right', 'top']].set_visible(False)
 axis.set_title('Simple LIF with\nOne Step STDP', fontweight='bold')
@@ -135,26 +140,25 @@ for xtick, color in zip(axis.get_xticklabels(), colors):
 axis = ax[1]
 sim_col, data = load('Results/Swift-SF315-51G/Izhikevich.csv')
 
-measurements = np.mean(data, axis=0)
-measurements = np.max(measurements)/measurements
-err = measurements*0#np.std(data, axis=0)
+avg_measurements = np.mean(data, axis=0)
+avg_speed_ups = np.max(avg_measurements)/avg_measurements
+speed_up_err = np.std(np.max(avg_measurements)/data, axis=0)
 
-#measurements = np.mean(data, axis=0)
-#err = np.std(data, axis=0)
+text_gap = np.max(avg_speed_ups)*0.01
+
 simulators = [s for s, c in sim_col]
 colors = [c for s, c in sim_col]
 #index = list(range(len(sim_col)))
 index = [4,3,2,5,6,7,1]
 
-text_gap = np.max(measurements)*0.01
-for i, s, m, e, c in zip(index, simulators, measurements, err, colors):
+for i, s, m, e, c in zip(index, simulators, avg_speed_ups, speed_up_err, colors):
     axis.bar(i, m, width=0.8, color=c, yerr=e, error_kw=ekw)
-    axis.text(i, m + e+text_gap, '{0:.2f}'.format(m)+'x', ha='center', va='bottom', color=c)
+    axis.text(i, m + e+text_gap, '{0:.1f}'.format(m)+'x', ha='center', va='bottom', color=c)
 
 
 axis.tick_params(axis='both', which='both', length=0)
 axis.set_yticks([], [])
-axis.set_ylim([0, np.max(measurements)*1.3])
+axis.set_ylim([0, np.max(avg_speed_ups)*1.3])
 axis.set_xticks(index, simulators, rotation=30, ha="right")
 axis.spines[['left', 'right', 'top']].set_visible(False)
 axis.set_title('Izhikevich with\nTrace STDP', fontweight='bold')
@@ -164,13 +168,90 @@ for xtick, color in zip(axis.get_xticklabels(), colors):
 
 
 
-ax[0].text(x=-0.2, y=10, s='A', size=20, weight='bold')
-ax[1].text(x=-0.2, y=4.75, s='B', size=20, weight='bold')
+ax[0].text(x=-0.2, y=140, s='A', size=20, weight='bold')
+ax[1].text(x=-0.2, y=12.6, s='B', size=20, weight='bold')
 #ax[0].text(x=100, y=0, s=' ', size=20, weight='bold')
 
 #ax[0].set_ylabel('compute time')
 
 fig.tight_layout()
-#plt.savefig('filename.png', dpi=600)
+plt.savefig('measurements_x.png', dpi=600)
 plt.show()
+
+
+
+###############################################################################
+
+
+def load2(filename):
+    sim = []
+    col = []
+    num = []
+    mes = []
+    with open(filename, newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        for i, row in enumerate(reader):
+            if i>0:
+                sim.append(lookup[row[1]][0])
+                col.append(lookup[row[1]][1])
+                num.append(int(row[2]))
+                mes.append(float(row[3]))
+    return np.array(sim), np.array(col), np.array(num), np.array(mes)
+            #print(i, row)
+            #if i==0:
+            #    sim_col = [lookup[s] for s in row[1:]]
+            #else:
+            #    measurements.append([float(s) for s in row])
+
+    #return sim_col, np.array(measurements)[:,1:] #remove enumeration in first column
+
+
+fig, ax = plt.subplots(1, 2)
+fig.set_figwidth(8)#12
+fig.set_figheight(3)
+
+axis = ax[0]
+axis.axvline(7500, c='lightgray', linestyle='--')
+sim, col, num, mes = load2('Results/Swift-SF315-51G/LIF.csv')
+for s in np.flip(np.unique(sim)):
+    idx = sim==s
+    x = np.sort(np.unique(num[idx]))
+    y = np.array([np.mean(mes[idx][num[idx]==n]) for n in x])
+    e = np.array([np.std(mes[idx][num[idx]==n]) for n in x])
+    axis.fill_between(x, y - e, y + e, alpha=0.5, edgecolor=col[idx][0], facecolor=col[idx][0], linewidth=0) #, c=col[idx][0]
+    axis.plot(x, y, c=col[idx][0])
+axis.semilogy()
+axis.tick_params(axis='x', which='both', length=3)
+axis.tick_params(axis='y', which='both', length=0)
+axis.set_yticks([], [])
+axis.set_ylabel('simulation time (log scale)')
+axis.set_xticks([0, 2500, 5000, 7500, 10000, 12500, 15000], [0, 2500, '', 'number of neurons', '', 12500, 15000])
+axis.spines[['left', 'right', 'top']].set_visible(False)
+axis.set_xlim([0, 15000])
+
+axis = ax[1]
+axis.axvline(2500, c='lightgray', linestyle='--')
+sim, col, num, mes = load2('Results/Swift-SF315-51G/IZH.csv')
+for s in np.flip(np.unique(sim)):
+    idx = sim==s
+    x = np.sort(np.unique(num[idx]))
+    y = np.array([np.mean(mes[idx][num[idx]==n]) for n in x])
+    e = np.array([np.std(mes[idx][num[idx]==n]) for n in x])
+    axis.fill_between(x, y - e, y + e, alpha=0.5, edgecolor=col[idx][0], facecolor=col[idx][0], linewidth=0) #, c=col[idx][0]
+    axis.plot(x, y, c=col[idx][0])
+axis.semilogy()
+axis.tick_params(axis='x', which='both', length=3)
+axis.tick_params(axis='y', which='both', length=0)
+axis.set_yticks([], [])
+axis.set_ylabel('simulation time (log scale)')
+axis.set_xticks([0, 2500, 5000, 7500, 10000, 12500, 15000], [0, 2500, '', 'number of neurons', '', 12500, 15000])
+axis.spines[['left', 'right', 'top']].set_visible(False)
+axis.set_xlim([0, 15000])
+
+
+
+fig.tight_layout()
+#plt.savefig('measurements_n.png', dpi=600)
+plt.show()
+
 
