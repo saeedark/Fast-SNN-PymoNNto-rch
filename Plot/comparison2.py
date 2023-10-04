@@ -18,10 +18,10 @@ lookup = {'brian_LIF.py': ['Brian2', color2],
           'nest_native_LIF.py': ['Nest', color3],
           'pymonnto_fast_LIF.py': ['PymoNNto', color11],
           'pymonnto_slow_LIF.py': ['PymoNNto', color11],# naive
-          'pymonntorch_fast_LIF_cpu.py': ['Pymonntorch CPU', color1],
-          'pymonntorch_fast_LIF_cuda.py': ['Pymonntorch GPU', color1],
-          'pymonntorch_slow_LIF_cpu.py': ['Pymonntorch CPU', color1],# naive
-          'pymonntorch_slow_LIF_cuda.py': ['Pymonntorch GPU', color1],# naive
+          'pymonntorch_fast_LIF_cpu.py': ['PymoNNtorch CPU ', color1],
+          'pymonntorch_fast_LIF_cuda.py': ['PymoNNtorch GPU', color1],
+          'pymonntorch_slow_LIF_cpu.py': ['PymoNNtorch CPU', color1],# naive
+          'pymonntorch_slow_LIF_cuda.py': ['PymoNNtorch GPU', color1],# naive
 
           'brian_izh.py': ['Brian2', color2],
           'brian_izh_cpp.py': ['Brian2 C++', color2],
@@ -32,7 +32,19 @@ lookup = {'brian_LIF.py': ['Brian2', color2],
           'pynn_nest_izh.py': ['Nest (PyNN)', color3]
           }
 
-
+markers_lookup = {"⋅⋅⋅ Pymonntorch GPU": ':',
+"⋅⋅⋅ PymoNNtorch GPU": ':',
+		  "-- Pymonntorch CPU": '--',
+		  "-- Pymonntorch CPU ": '--',
+		  "-- PymoNNtorch CPU": '--',
+		  "-- PymoNNtorch CPU ": '--',
+		  "— PymoNNto": '-',
+"— Nest": '-',
+"⋅⋅⋅ Brian2 GPU": ":",
+"-- Brian2 C++": "--",
+"— Brian2": "-",		
+'— Nest (PyNN)': "-",  
+}
 
 def load(filename):
     sim_col = []
@@ -92,6 +104,25 @@ plt.savefig('measurements_x2.png', dpi=600)
 plt.show()
 
 
+lookup = {'brian_LIF.py': [ '— Brian2', color2],
+          'brian_LIF_cpp.py': ['-- Brian2 C++', color2],
+          'brian_LIF_gpu.py': ['⋅⋅⋅ Brian2 GPU', color2],
+          'nest_native_LIF.py': ['— Nest', color3],
+          'pymonnto_fast_LIF.py': ['— PymoNNto', color11],
+          'pymonnto_slow_LIF.py': ['— PymoNNto', color11],# naive
+          'pymonntorch_fast_LIF_cpu.py': ['-- PymoNNtorch CPU ', color1],
+          'pymonntorch_fast_LIF_cuda.py': ['⋅⋅⋅ PymoNNtorch GPU', color1],
+          'pymonntorch_slow_LIF_cpu.py': ['-- PymoNNtorch CPU', color1],# naive
+          'pymonntorch_slow_LIF_cuda.py': ['⋅⋅⋅ PymoNNtorch GPU', color1],# naive
+
+          'brian_izh.py': ['— Brian2', color2],
+          'brian_izh_cpp.py': ['-- Brian2 C++', color2],
+          'brian_izh_cuda.py': ['⋅⋅⋅ Brian2 GPU', color2],
+          'pymonnto_izh.py': ['— PymoNNto', color11],
+          'pymonntorch_izh_cpu.py': ['-- PymoNNtorch CPU', color1],
+          'pymonntorch_izh_cuda.py': ['⋅⋅⋅ PymoNNtorch GPU', color1],
+          'pynn_nest_izh.py': ['— Nest (PyNN)', color3]
+          }
 
 
 
@@ -149,7 +180,7 @@ text_gap = np.max(avg_speed_ups)*0.01
 simulators = [s for s, c in sim_col]
 colors = [c for s, c in sim_col]
 #index = list(range(len(sim_col)))
-index = [4,3,2,5,6,7,1]
+index = [3,4,2,5,6,7,1]
 
 for i, s, m, e, c in zip(index, simulators, avg_speed_ups, speed_up_err, colors):
     axis.bar(i, m, width=0.8, color=c, yerr=e, error_kw=ekw)
@@ -168,7 +199,7 @@ for xtick, color in zip(axis.get_xticklabels(), colors):
 
 
 
-ax[0].text(x=-0.2, y=140, s='A', size=20, weight='bold')
+ax[0].text(x=-0.2, y=145, s='A', size=20, weight='bold')
 ax[1].text(x=-0.2, y=12.6, s='B', size=20, weight='bold')
 #ax[0].text(x=100, y=0, s=' ', size=20, weight='bold')
 
@@ -208,7 +239,7 @@ def load2(filename):
 
 fig, ax = plt.subplots(1, 2)
 fig.set_figwidth(8)#12
-fig.set_figheight(3)
+fig.set_figheight(4)
 
 axis = ax[0]
 axis.axvline(7500, c='lightgray', linestyle='--')
@@ -219,7 +250,9 @@ for s in np.flip(np.unique(sim)):
     y = np.array([np.mean(mes[idx][num[idx]==n]) for n in x])
     e = np.array([np.std(mes[idx][num[idx]==n]) for n in x])
     axis.fill_between(x, y - e, y + e, alpha=0.5, edgecolor=col[idx][0], facecolor=col[idx][0], linewidth=0) #, c=col[idx][0]
-    axis.plot(x, y, c=col[idx][0])
+    # axis.plot(x, y, c=col[idx][0])
+    axis.plot(x, y, c=col[idx][0], linestyle=markers_lookup[s], label=s)
+handles, labels = axis.get_legend_handles_labels()
 axis.semilogy()
 axis.tick_params(axis='x', which='both', length=3)
 axis.tick_params(axis='y', which='both', length=0)
@@ -238,20 +271,26 @@ for s in np.flip(np.unique(sim)):
     y = np.array([np.mean(mes[idx][num[idx]==n]) for n in x])
     e = np.array([np.std(mes[idx][num[idx]==n]) for n in x])
     axis.fill_between(x, y - e, y + e, alpha=0.5, edgecolor=col[idx][0], facecolor=col[idx][0], linewidth=0) #, c=col[idx][0]
-    axis.plot(x, y, c=col[idx][0])
+    # axis.plot(x, y, c=col[idx][0])
+    axis.plot(x, y, c=col[idx][0], linestyle=markers_lookup[s], label=s)
 axis.semilogy()
 axis.tick_params(axis='x', which='both', length=3)
 axis.tick_params(axis='y', which='both', length=0)
 axis.set_yticks([], [])
 axis.set_ylabel('simulation time (log scale)')
-axis.set_xticks([0, 2500, 5000, 7500, 10000, 12500, 15000], [0, 2500, '', 'number of neurons', '', 12500, 15000])
+axis.set_xticks([0, 2500, 5000, 7500, 10000, 12500, 15000], ['', 'number of neurons', '', 7500, 10000, 12500, 15000])
 axis.spines[['left', 'right', 'top']].set_visible(False)
 axis.set_xlim([0, 15000])
 
-
+# fig.legend(handles, labels, ncol=5, loc='lower center', bbox_to_anchor=(0.5, 0.01), prop={'size':8} )
 
 fig.tight_layout()
-#plt.savefig('measurements_n.png', dpi=600)
+# plt.subplots_adjust(left=None, bottom=0.2, right=None, top=None, wspace=None, hspace=0.1)
+
+ax[0].text(x=-0.2, y=15, s='C', size=20, weight='bold')
+ax[1].text(x=-0.2, y=125, s='D', size=20, weight='bold')
+
+plt.savefig('measurements_n.png', dpi=600)
 plt.show()
 
 
