@@ -239,7 +239,7 @@ def load2(filename):
 
 fig, ax = plt.subplots(1, 2)
 fig.set_figwidth(8)#12
-fig.set_figheight(4)
+fig.set_figheight(3.25)
 
 axis = ax[0]
 axis.axvline(7500, c='lightgray', linestyle='--')
@@ -258,7 +258,8 @@ axis.tick_params(axis='x', which='both', length=3)
 axis.tick_params(axis='y', which='both', length=0)
 axis.set_yticks([], [])
 axis.set_ylabel('simulation time (log scale)')
-axis.set_xticks([0, 2500, 5000, 7500, 10000, 12500, 15000], [0, 2500, '', 'number of neurons', '', 12500, 15000])
+axis.set_xticks([0, 2500, 5000, 7500, 10000, 12500, 15000], [0, 2500, 5000, 7500, 7500, 12500, 15000])
+axis.set_title('number of neurons', x=0.85, y=0.1, pad=-14, fontsize=10)
 axis.spines[['left', 'right', 'top']].set_visible(False)
 axis.set_xlim([0, 15000])
 
@@ -278,10 +279,11 @@ axis.tick_params(axis='x', which='both', length=3)
 axis.tick_params(axis='y', which='both', length=0)
 axis.set_yticks([], [])
 axis.set_ylabel('simulation time (log scale)')
-axis.set_xticks([0, 2500, 5000, 7500, 10000, 12500, 15000], ['', 'number of neurons', '', 7500, 10000, 12500, 15000])
+
+axis.set_xticks([0, 2500, 5000, 7500, 10000, 12500, 15000], [0, 2500, 5000, 7500, 10000, 12500, 15000])
 axis.spines[['left', 'right', 'top']].set_visible(False)
 axis.set_xlim([0, 15000])
-
+axis.set_title('number of neurons', x=0.85, y=0.1, pad=-14, fontsize=10)
 # fig.legend(handles, labels, ncol=5, loc='lower center', bbox_to_anchor=(0.5, 0.01), prop={'size':8} )
 
 fig.tight_layout()
