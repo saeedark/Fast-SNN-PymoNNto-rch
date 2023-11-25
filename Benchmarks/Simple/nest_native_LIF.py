@@ -90,7 +90,7 @@ nest.Install(module_name)
 
 # Set up the NEST simulation
 nest.ResetKernel()
-nest.SetKernelStatus({'resolution': 1.0, 'print_time': False})
+nest.SetKernelStatus({'resolution': 1.0, 'print_time': False, 'local_num_threads': os.cpu_count()})
 
 # Define parameters
 num_neurons = SIZE
