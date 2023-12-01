@@ -38,8 +38,8 @@ CustomSTDP = Synapse(
     parameters=f"""
         tau_pre = {TRACE_TAU} : projection
         tau_post = {TRACE_TAU} : projection
-        cApre = {A_MINUS} : projection
-        cApost = {A_PLUS} : projection
+        cApost = {A_MINUS} : projection
+        cApre = {A_PLUS} : projection
         wmax = 1.0 : projection
     """,
     equations="""
@@ -48,12 +48,12 @@ CustomSTDP = Synapse(
     """,
     pre_spike=f"""
         v_target += (w * {DIRAC_STRENGTH})
-        Apre += cApre
-        w = clip(w - (Apre * (w - 0.0)), 0.0 , wmax)
+        Apre += 1.0
+        w = clip(w - (Apost * cApost * (w - 0.0)), 0.0 , wmax)
     """,
     post_spike="""
-        Apost += cApost
-        w = clip(w + (Apost * (wmax - w)), 0.0 , wmax)
+        Apost += 1.0
+        w = clip(w + (Apre * cApre * (wmax - w)), 0.0 , wmax)
     """,
 )
 
