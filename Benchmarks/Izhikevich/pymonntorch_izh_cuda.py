@@ -14,11 +14,11 @@ class TimeResolution(Behavior):
 
 class Izhikevich(Behavior):
     def initialize(self, n):
-        self.a = self.parameter("a", None)
-        self.b = self.parameter("b", None)
-        self.c = self.parameter("c", None)
-        self.d = self.parameter("d", None)
-        self.threshold = self.parameter("threshold", None)
+        self.a = self.parameter("a")
+        self.b = self.parameter("b")
+        self.c = self.parameter("c")
+        self.d = self.parameter("d")
+        self.threshold = self.parameter("threshold")
 
         n.u = n.vector(f"normal({U_MEAN}, {U_STD})")
         n.v = n.vector(f"normal({V_MEAN}, {V_STD})")
@@ -37,24 +37,27 @@ class Izhikevich(Behavior):
         n.u += du * n.network.dt
 
 
-class Dendrite(Behavior):
+class Input(Behavior):
     def initialize(self, n):
-        self.offset = self.parameter("offset", None)
+        self.offset = self.parameter("offset")
+        self.strength = self.parameter("strength")
         n.I = n.vector(self.offset)
+        for s in n.afferent_synapses["GLU"]:
+            s.W = s.matrix("random") * W_MAX + W_MIN
 
     def forward(self, n):
         n.I.fill_(self.offset)
         for s in n.afferent_synapses["GLU"]:
-            n.I += s.I
+            n.I += torch.sum(s.W[s.src.spikes], axis=0) * self.strength
         n.I += n.vector(f"normal({NOISE_MEAN}, {NOISE_STD})")
 
 
 class STDP(Behavior):
     def initialize(self, s):
-        self.pre_tau = self.parameter("pre_tau", None)
-        self.post_tau = self.parameter("post_tau", None)
-        self.a_plus = self.parameter("a_plus", None)
-        self.a_minus = self.parameter("a_minus", None)
+        self.pre_tau = self.parameter("pre_tau")
+        self.post_tau = self.parameter("post_tau")
+        self.a_plus = self.parameter("a_plus")
+        self.a_minus = self.parameter("a_minus")
 
         s.src_trace = s.src.vector()
         s.dst_trace = s.dst.vector()
@@ -73,16 +76,6 @@ class STDP(Behavior):
         # s.W = torch.clip(s.W, W_MIN, W_MAX)
 
 
-class DiracInput(Behavior):
-    def initialize(self, s):
-        self.strength = self.parameter("strength", None)
-        s.I = s.dst.vector()
-        s.W = s.matrix("random") * W_MAX + W_MIN
-        # s.W.fill_diagonal_(0)
-
-    def forward(self, s):
-        s.I = torch.sum(s.W[s.src.spikes], axis=0) * self.strength
-
 
 net = Network(behavior={1: TimeResolution()}, **settings)
 
@@ -91,7 +84,7 @@ NeuronGroup(
     tag="NG",
     size=SIZE,
     behavior={
-        1: Dendrite(offset=OFFSET),
+        1: Input(offset=OFFSET, strength=DIRAC_STRENGTH),
         2: Izhikevich(a=A, b=B, c=C, d=D, threshold=THRESHOLD),
     },
 )
@@ -105,7 +98,6 @@ SynapseGroup(
     dst="NG",
     tag="GLU",
     behavior={
-        4: DiracInput(strength=DIRAC_STRENGTH),
         5: STDP(a_plus=A_PLUS, a_minus=A_MINUS, pre_tau=TRACE_TAU, post_tau=TRACE_TAU),
     },
 )

@@ -5,7 +5,7 @@ from globparams import *
 settings = {'dtype': float64, 'synapse_mode': DxS}
 
 
-class SpikeGeneration(Behavior):
+class LeakyIntegrateAndFire(Behavior):
     def initialize(self, neurons):
         neurons.spikes = neurons.vector('bool')
         neurons.spikesOld = neurons.vector('bool')
@@ -32,8 +32,7 @@ class Input(Behavior):
     def iteration(self, neurons):
         neurons.voltage += neurons.vector('random')
         for s in neurons.synapses(afferent, 'GLU'):
-            input = s.W.dot(s.src.spikes)
-            s.dst.voltage += input
+            s.dst.voltage += s.W.dot(s.src.spikes)
 
 
 class STDP(Behavior):
@@ -54,7 +53,7 @@ class STDP(Behavior):
 
 net = Network(settings=settings)
 NeuronGroup(net, tag='NG', size=SIZE, behavior={
-    1: SpikeGeneration(threshold=VT, decay=DECAY),
+    1: LeakyIntegrateAndFire(threshold=VT, decay=DECAY),
     2: Input(),
     3: STDP(speed=STDP_SPEED),
     #4: Norm()

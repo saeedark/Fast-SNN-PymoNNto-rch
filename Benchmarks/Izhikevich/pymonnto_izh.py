@@ -47,17 +47,20 @@ class Izhikevich(Behavior):
 
 
 
-class Dendrite(Behavior):
+class Input(Behavior):
     def initialize(self, n):
-        self.offset = self.parameter("offset", None)
+        self.offset = self.parameter("offset")
+        self.strength = self.parameter("strength")
         n.I = n.vector(self.offset)
+        for s in n.afferent_synapses["GLU"]:
+            s.W = s.matrix("random") * W_MAX + W_MIN
 
     def iteration(self, n):
         n.I.fill(self.offset)
         n.I += n.vector("normal") * NOISE_STD + NOISE_MEAN
 
         for s in n.afferent_synapses["GLU"]:
-            n.I += s.I
+            n.I += np.sum(s.W[s.src.spikes], axis=0) * self.strength
 
 
 class STDP(Behavior):
@@ -84,17 +87,6 @@ class STDP(Behavior):
         # s.W = np.clip(s.W, W_MIN, W_MAX)
 
 
-class DiracInput(Behavior):
-    def initialize(self, s):
-        self.strength = self.parameter("strength")
-        s.I = s.dst.vector()
-        s.W = s.matrix("random") * W_MAX + W_MIN
-        # np.fill_diagonal(s.W, 0)
-
-    def iteration(self, s):
-        s.I = np.sum(s.W[s.src.spikes], axis=0) * self.strength
-
-
 net = Network(behavior={1: TimeResolution()}, settings=settings)
 
 NeuronGroup(
@@ -102,7 +94,7 @@ NeuronGroup(
     tag="NG",
     size=SIZE,
     behavior={
-        1: Dendrite(offset=OFFSET),
+        1: Input(offset=OFFSET, strength=DIRAC_STRENGTH),
         2: Izhikevich(a=A, b=B, c=C, d=D, threshold=THRESHOLD),
     },
 )
@@ -116,7 +108,6 @@ SynapseGroup(
     dst="NG",
     tag="GLU",
     behavior={
-        4: DiracInput(strength=DIRAC_STRENGTH),
         5: STDP(a_plus=A_PLUS, a_minus=A_MINUS, pre_tau=TRACE_TAU, post_tau=TRACE_TAU),
     },
 )
