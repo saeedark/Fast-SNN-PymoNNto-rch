@@ -68,10 +68,17 @@ if PLOT:
 SynapseGroup(net, src='NG', dst='NG', tag='GLU')
 net.initialize()
 
-start = time.time()
-net.simulate_iterations(DURATION)
-print("simulation time: ", time.time()-start)
+if not MEASURE_INDIVIDUALLY:
+    start = time.time()
+    net.simulate_iterations(DURATION, batch_size=DURATION, measure_block_time=True)
+    print("simulation time: ", time.time() - start)
+else:
+    for i in range(DURATION):
+        net.simulate_iteration(measure_behavior_execution_time=True)
+    print('module time:', net.time_measures)
 
 if PLOT:
+    print('firing rate:', len(net['spikes.i', 0]) / SIZE / DURATION * 1000, 'Hz')
+    print(f"Total spikes: {len(net['spikes.i', 0])}")
     plt.plot(net['spikes.t', 0], net['spikes.i', 0], '.k')
     plt.show()

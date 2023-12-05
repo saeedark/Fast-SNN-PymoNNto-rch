@@ -1,8 +1,9 @@
 import sys
 PLOT = not 'no_plot' in sys.argv
+MEASURE_INDIVIDUALLY = False
 
-DURATION = 100
-SIZE = 7500
+DURATION = 300
+SIZE = 2500
 
 VT = 6.1
 VR = 0.0

@@ -1,5 +1,6 @@
 import sys
 PLOT = not 'no_plot' in sys.argv
+MEASURE_INDIVIDUALLY = False
 
 DURATION = 300
 SIZE = 2500
