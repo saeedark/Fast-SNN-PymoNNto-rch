@@ -21,6 +21,7 @@ prefs.core.default_float_dtype = float32
 
 a, b, c, d = A, B, C, D
 offset = OFFSET
+a_plus, a_minus = A_PLUS, A_MINUS
 
 ng = NeuronGroup(
     SIZE,
@@ -41,10 +42,10 @@ sg = Synapses(
     on_pre="""
     Apre += 1
     I_post += w * DIRAC_STRENGTH
-    w = w - Apost * (w - W_MIN) """,
+    w = w - Apost * (w - W_MIN) * a_minus""",
     on_post="""
     Apost += 1
-    w = w + Apre * (W_MAX - w) """,
+    w = w + Apre * (W_MAX - w) * a_plus""",
 )
 
 # sg.connect(condition='i!=j')

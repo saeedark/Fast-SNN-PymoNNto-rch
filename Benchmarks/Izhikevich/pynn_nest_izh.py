@@ -3,16 +3,17 @@ from pyNN.utility.plotting import Figure, Panel
 from pyNN.random import RandomDistribution, NumpyRNG
 import time
 from globparams import *
+import os
 
-sim.setup(timestep=1, min_delay=1, max_delay=1)
+sim.setup(timestep=1, min_delay=1, max_delay=1, threads=os.cpu_count())
 rng = NumpyRNG()
 
-cell_type = sim.Izhikevich(a=A, b=B, c=C, d=D, i_offset=OFFSET * 10**(-3))
+cell_type = sim.Izhikevich(a=A, b=B, c=C, d=D, i_offset=OFFSET * 10 ** (-3))
 
 pop1 = sim.Population(size=SIZE, cellclass=cell_type, label="pop1")
 
-w_min = W_MIN * DIRAC_STRENGTH * 10**(-3)
-w_max = W_MAX * DIRAC_STRENGTH * 10**(-3)
+w_min = W_MIN * DIRAC_STRENGTH * 10 ** (-3)
+w_max = W_MAX * DIRAC_STRENGTH * 10 ** (-3)
 
 stdp_model = sim.STDPMechanism(
     timing_dependence=sim.SpikePairRule(
@@ -34,14 +35,14 @@ syn = sim.Projection(
 )
 
 pop1.initialize(
-    v=RandomDistribution('normal', mu=V_MEAN, sigma=V_STD), 
-    u=RandomDistribution('normal', mu=U_MEAN, sigma=U_STD)
+    v=RandomDistribution("normal", mu=V_MEAN, sigma=V_STD),
+    u=RandomDistribution("normal", mu=U_MEAN, sigma=U_STD),
 )
 
 
 noise = sim.standardmodels.electrodes.NoisyCurrentSource(
-    mean=NOISE_MEAN * 10**(-3), 
-    stdev=NOISE_STD * 10**(-3), 
+    mean=NOISE_MEAN * 10 ** (-3),
+    stdev=NOISE_STD * 10 ** (-3),
     dt=1,
 )
 
@@ -58,9 +59,7 @@ print("simulation time: ", time.time() - start)
 if PLOT:
     data = pop1.get_data().segments[0]
     print(data.spiketrains)
-    Figure(
-        Panel(data.spiketrains, xlabel="Time (ms)", xticks=True)
-    ).show()
+    Figure(Panel(data.spiketrains, xlabel="Time (ms)", xticks=True)).show()
 
 
 sim.end()

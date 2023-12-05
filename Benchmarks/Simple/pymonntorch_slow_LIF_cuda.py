@@ -7,13 +7,13 @@ from globparams import *
 settings = {'dtype': torch.float64, 'synapse_mode': "DxS", 'device': 'cuda'}
 
 
-class SpikeGeneration(Behavior):
+class LeakyIntegrateAndFire(Behavior):
     def initialize(self, neurons):
         neurons.spikes = neurons.vector(dtype=torch.bool)
         neurons.spikesOld = neurons.vector(dtype=torch.bool)
         neurons.voltage = neurons.vector()
-        self.threshold = self.parameter('threshold', None)
-        self.decay = self.parameter('decay', None)
+        self.threshold = self.parameter('threshold')
+        self.decay = self.parameter('decay')
 
     def forward(self, neurons):
         neurons.spikesOld = neurons.spikes.clone()
@@ -34,13 +34,12 @@ class Input(Behavior):
     def forward(self, neurons):
         neurons.voltage += neurons.vector('random')
         for s in neurons.synapses('afferent', 'GLU'):
-            input = torch.tensordot(s.W, s.src.spikes.to(neurons.def_dtype), dims=[[1], [0]])
-            s.dst.voltage += input
+            s.dst.voltage += torch.tensordot(s.W, s.src.spikes.to(neurons.def_dtype), dims=[[1], [0]])
 
 
 class STDP(Behavior):
     def initialize(self, neurons):
-        self.speed = self.parameter('speed', None)
+        self.speed = self.parameter('speed')
 
     def forward(self, neurons):
         for s in neurons.synapses('afferent', 'GLU'):
@@ -56,7 +55,7 @@ class STDP(Behavior):
 
 net = Network(**settings)
 NeuronGroup(net=net, tag='NG', size=SIZE, behavior={
-    1: SpikeGeneration(threshold=VT, decay=DECAY),
+    1: LeakyIntegrateAndFire(threshold=VT, decay=DECAY),
     2: Input(),
     3: STDP(speed=STDP_SPEED),
     #4: Norm()
