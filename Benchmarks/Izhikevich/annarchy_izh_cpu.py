@@ -43,8 +43,8 @@ CustomSTDP = Synapse(
         wmax = 1.0 : projection
     """,
     equations="""
-        tau_pre * dApre/dt = - Apre 
-        tau_post * dApost/dt = - Apost 
+        tau_pre * dApre/dt = - Apre : event-driven
+        tau_post * dApost/dt = - Apost : event-driven
     """,
     pre_spike=f"""
         v_target += (w * {DIRAC_STRENGTH})

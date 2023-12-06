@@ -5,7 +5,7 @@ MEASURE_INDIVIDUALLY = False
 DURATION = 300
 SIZE = int(sys.argv[1])
 
-VT = 6.1
+VT = 6.0
 VR = 0.0
 STDP_SPEED = 0.001
 DECAY = 0.9

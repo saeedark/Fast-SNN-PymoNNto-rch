@@ -47,12 +47,12 @@ neuron simple_neuron:
 simple_stdp_synapse = """
 synapse stdp_nn_symm:
     state:
-        w real = 1.
+        w real = 1.0
         pre_trace real = 0.
 
     parameters:
-        d ms = 1 ms  @nest::delay
-        tau_tr_pre ms = 1 ms
+        d ms = 1.0 ms  @nest::delay
+        tau_tr_pre ms = 1.0 ms
         stdp_speed real = 0.01
 
     equations:
@@ -66,8 +66,8 @@ synapse stdp_nn_symm:
         spike
 
     onReceive(post_spikes):
-        if pre_trace>0:
-            w += stdp_speed * pre_trace
+        if pre_trace == 1:
+            w += stdp_speed
 
     onReceive(pre_spikes):
         pre_trace = 1
