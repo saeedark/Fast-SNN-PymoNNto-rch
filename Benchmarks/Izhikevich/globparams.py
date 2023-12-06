@@ -3,7 +3,7 @@ PLOT = not 'no_plot' in sys.argv
 MEASURE_INDIVIDUALLY = False
 
 DURATION = 300
-SIZE = 2500
+SIZE = int(sys.argv[1])
 
 A, B, C, D = 0.02, 0.04, -65.0, 2.0
 THRESHOLD = 30.0

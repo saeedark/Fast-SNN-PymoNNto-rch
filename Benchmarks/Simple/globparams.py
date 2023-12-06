@@ -3,7 +3,7 @@ PLOT = not 'no_plot' in sys.argv
 MEASURE_INDIVIDUALLY = False
 
 DURATION = 300
-SIZE = 2500
+SIZE = int(sys.argv[1])
 
 VT = 6.1
 VR = 0.0
