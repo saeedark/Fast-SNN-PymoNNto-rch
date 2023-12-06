@@ -14,7 +14,7 @@ if platform.node() == 'saeed-Swift-SF315-51G':
     prefs.devices.cuda_standalone.cuda_backend.detect_gpus = False
     prefs.devices.cuda_standalone.cuda_backend.gpu_id = 0
     prefs.devices.cuda_standalone.cuda_backend.compute_capability = 6.1
-    prefs.devices.cuda_standalone.default_functions_integral_convertion = np.float32
+prefs.devices.cuda_standalone.default_functions_integral_convertion = np.float32
 
 a, b, c, d = A, B, C, D
 offset = OFFSET
