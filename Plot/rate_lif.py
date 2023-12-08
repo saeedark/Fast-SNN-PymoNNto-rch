@@ -202,7 +202,7 @@ ax[1].set_title('Normal Spike Rate', x=0.47, y=0.95, pad=0, fontsize=10)
 ax[2].set_title('High Spike Rate', x=0.47, y=0.95, pad=0, fontsize=10)
 
 
-axis.text(6900, 0.001, "Number of Neurons")
+axis.text(5900, 0.0013, "Number of Neurons")
 
 #ax[0].text(x=100, y=0, s=' ', size=20, weight='bold')
 
