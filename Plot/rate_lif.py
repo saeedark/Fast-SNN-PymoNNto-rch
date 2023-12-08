@@ -182,9 +182,9 @@ axis.tick_params(axis='x', which='both', length=3)
 # axis.tick_params(axis='y', which='both', length=0)
 # axis.set_yticks([], [])
 
-axis.set_xticks([0, 2500, 5000, 7500, 10000, 12500, 15000], [0, 2500, 5000, 7500, 10000, 12500, 15000])
+axis.set_xticks([0, 2500, 5000, 7500, 10000], [0, 2500, 5000, 7500, 10000])
 axis.spines[['right', 'top']].set_visible(False)
-axis.set_xlim([0, 15000])
+axis.set_xlim([0, 10000])
 axis.set_title('Number of Neurons', x=0.87, y=0, pad=-14, fontsize=10)
 # axis.set_xlabel("Number of Neurons", loc='right')
 
@@ -202,7 +202,7 @@ ax[1].set_title('Normal Spike Rate', x=0.47, y=0.95, pad=0, fontsize=10)
 ax[2].set_title('High Spike Rate', x=0.47, y=0.95, pad=0, fontsize=10)
 
 
-axis.text(8900, 0.001, "Number of Neurons")
+axis.text(6900, 0.001, "Number of Neurons")
 
 #ax[0].text(x=100, y=0, s=' ', size=20, weight='bold')
 
