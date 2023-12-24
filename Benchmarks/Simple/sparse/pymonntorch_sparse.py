@@ -5,8 +5,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 from globparams import *
 
-DENSITY = 0.01
-settings = {'dtype': torch.float32, 'synapse_mode': "SxD", 'device': 'cpu'}
+DENSITY = 0.0005
+settings = {'dtype': torch.float32, 'synapse_mode': "SxD", 'device': 'cuda'}
 
 
 class LeakyIntegrateAndFire(Behavior):
