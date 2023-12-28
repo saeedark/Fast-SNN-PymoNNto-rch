@@ -5,6 +5,15 @@ import scipy as sp
 
 settings = {'dtype': float32, 'synapse_mode': SxD}
 
+def segIndex(inp_list, size):
+    import numpy as np
+    arr = [[] for _ in range(size)]
+    for idx,value in enumerate(inp_list):
+        arr[value].append(idx)
+    arr = [np.asarray(x) for x in arr]
+    out = np.empty(len(arr), dtype=object)
+    out[:] = arr
+    return out
 
 class LeakyIntegrateAndFire(Behavior):
     def initialize(self, neurons):
@@ -30,9 +39,15 @@ class Input(Behavior):
         for s in neurons.synapses(afferent, 'GLU'):
             # s.W = s.matrix('random')
             s.W = sp.sparse.random(*s.matrix_dim(), density=sparsity, dtype=float32)
+            # making sure that the order of data remains the same
+            s.W = s.W.tocsr()
+            s.W = s.W.tocoo()
             s.col_idx = s.W.col
             s.row_idx = s.W.row
+            s.pre_idx = segIndex(s.row_idx, s.src.size)
+            s.post_idx = segIndex(s.col_idx, s.dst.size)
             s.W = s.W / SIZE
+            s.W = s.W.tocsr()
             # s.W /= np.sum(s.W, axis=0) #normalize during initialization
 
     def iteration(self, neurons):
@@ -50,10 +65,17 @@ class STDP(Behavior):
         for s in neurons.synapses(afferent, 'GLU'):
             # mask = np.ix_(s.src.spikesOld, s.dst.spikes)
             # s.W[mask] += self.speed
-            mask = s.dst.spikes[s.row_idx] * s.src.spikesOld[s.col_idx]
-            data = s.W.data
-            data[mask] += self.speed
-            data[mask] = np.clip(data[mask], 0.0, 1.0)
+            # mask = s.dst.spikes[s.row_idx] * s.src.spikesOld[s.col_idx]
+            pre = s.pre_idx[s.src.spikesOld]
+            if len(pre):
+                pre_mask = np.concatenate(pre)
+                post = s.post_idx[s.src.spikes]
+                if len(post):
+                    post_mask = np.concatenate(post)
+                    mask = np.intersect1d(pre_mask, post_mask)
+                    data = s.W.data
+                    data[mask] += self.speed
+                    data[mask] = np.clip(data[mask], 0.0, 1.0)
             
 
 

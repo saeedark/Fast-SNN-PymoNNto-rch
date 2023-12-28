@@ -5,8 +5,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from globparams import *
 
-DENSITY = 0.0005
-settings = {'dtype': torch.float32, 'synapse_mode': "SxD", 'device': 'cuda'}
+settings = {'dtype': torch.float32, 'synapse_mode': "SxD", 'device': 'cpu'}
 
 
 class LeakyIntegrateAndFire(Behavior):
@@ -29,24 +28,33 @@ class LeakyIntegrateAndFire(Behavior):
 
 class Input(Behavior):
     def initialize(self, neurons):
+        sparsity = self.parameter('density')
         for s in neurons.synapses('afferent', 'GLU'):
             # s.W = s.matrix('random')
             n_row, n_col = s.matrix_dim()
-            nnz = int(n_row * n_col * DENSITY)
-            s.col_idx = torch.randint(0, n_col, (nnz,), device=s.device)
-            s.row_idx = torch.randint(0, n_row, (nnz,), device=s.device)
+            nnz = int(n_row * n_col * sparsity)
+            both_indices = torch.randint(n_row*n_col, size=(nnz,), device=s.device)
+            while len(both_indices.unique()) != nnz:
+                both_indices = both_indices.unique()
+                new_indices = torch.randint(n_row*n_col, size=(nnz-len(both_indices),), device=s.device)
+                both_indices = torch.hstack([both_indices, new_indices])
+            s.row_idx = both_indices % n_col
+            s.col_idx = both_indices // n_col
             indices = torch.stack([s.row_idx, s.col_idx])
             values =  s.tensor(mode='uniform', dim=(nnz,))
             s.W = torch.sparse_coo_tensor(indices, values, s.matrix_dim())
+            s.W = s.W.coalesce()
             s.W = s.W / SIZE
+            s.W = s.W.to_sparse_csr()
             # s.W /= torch.sum(s.W, axis=0) #normalize during initialization
 
     def forward(self, neurons):
         neurons.voltage += neurons.vector('random')
         for s in neurons.synapses('afferent', 'GLU'):
             # s.dst.voltage += torch.sum(s.W[s.src.spikes], axis=0)
-            s.dst.voltage += torch.mm(s.W, s.src.spikes.view(-1,1)*1.0).view(-1,)
             # s.dst.voltage += torch.mv(s.W, s.src.spikes*1.0)
+            s.dst.voltage += torch.mm(s.W, s.src.spikes.view(-1,1)*1.0).view(-1,)
+            # pass
 
 
 class STDP(Behavior):
@@ -56,8 +64,9 @@ class STDP(Behavior):
     def forward(self, neurons):
         for s in neurons.synapses('afferent', 'GLU'):
             # mask = (torch.where(s.src.spikesOld)[0].view(-1, 1), torch.where(s.dst.spikes)[0].view(1, -1))
+            # mask = torch.gather(s.dst.spikes,0,s.row_idx) * torch.gather(s.src.spikesOld,0,s.col_idx)
             mask = s.dst.spikes[s.row_idx] * s.src.spikesOld[s.col_idx]
-            data = s.W._values()[:]
+            data = s.W.values()[:]
             data[mask] += self.speed
             data[mask] = torch.clip(data[mask], 0.0, 1.0)
             
@@ -73,7 +82,7 @@ class STDP(Behavior):
 net = Network(**settings)
 NeuronGroup(net=net, tag='NG', size=SIZE, behavior={
     1: LeakyIntegrateAndFire(threshold=VT, decay=DECAY),
-    2: Input(),
+    2: Input(density=DENSITY),
     3: STDP(speed=STDP_SPEED),
     #4: Norm(),
     #5: EventRecorder(['spikes'])
