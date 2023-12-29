@@ -10,7 +10,7 @@ def segIndex(inp_list, size):
     arr = [[] for _ in range(size)]
     for idx,value in enumerate(inp_list):
         arr[value].append(idx)
-    arr = [np.asarray(x) for x in arr]
+    arr = [np.asarray(x, dtype=np.int64) for x in arr]
     out = np.empty(len(arr), dtype=object)
     out[:] = arr
     return out
@@ -38,14 +38,14 @@ class Input(Behavior):
         sparsity = self.parameter('density')
         for s in neurons.synapses(afferent, 'GLU'):
             # s.W = s.matrix('random')
-            s.W = sp.sparse.random(*s.matrix_dim(), density=sparsity, dtype=float32)
+            s.W = sp.sparse.random(*s.matrix_dim(), density=sparsity, dtype=settings['dtype'])
             # making sure that the order of data remains the same
             s.W = s.W.tocsr()
             s.W = s.W.tocoo()
             s.col_idx = s.W.col
             s.row_idx = s.W.row
-            s.pre_idx = segIndex(s.row_idx, s.src.size)
-            s.post_idx = segIndex(s.col_idx, s.dst.size)
+            s.post_idx = segIndex(s.row_idx, s.dst.size)
+            s.pre_idx = segIndex(s.col_idx, s.src.size)
             s.W = s.W / SIZE
             s.W = s.W.tocsr()
             # s.W /= np.sum(s.W, axis=0) #normalize during initialization
@@ -67,15 +67,14 @@ class STDP(Behavior):
             # s.W[mask] += self.speed
             # mask = s.dst.spikes[s.row_idx] * s.src.spikesOld[s.col_idx]
             pre = s.pre_idx[s.src.spikesOld]
-            if len(pre):
+            post = s.post_idx[s.dst.spikes]
+            if len(pre) and len(post):
                 pre_mask = np.concatenate(pre)
-                post = s.post_idx[s.src.spikes]
-                if len(post):
-                    post_mask = np.concatenate(post)
-                    mask = np.intersect1d(pre_mask, post_mask)
-                    data = s.W.data
-                    data[mask] += self.speed
-                    data[mask] = np.clip(data[mask], 0.0, 1.0)
+                post_mask = np.concatenate(post)
+                mask = np.intersect1d(pre_mask, post_mask)
+                data = s.W.data
+                data[mask] += self.speed
+                data[mask] = np.clip(data[mask], 0.0, 1.0)
             
 
 

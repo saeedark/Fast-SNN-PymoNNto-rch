@@ -29,7 +29,7 @@ class Input(Behavior):
         sparsity = self.parameter('density')
         for s in neurons.synapses(afferent, 'GLU'):
             # s.W = s.matrix('random')
-            s.W = sp.sparse.random(*s.matrix_dim(), density=sparsity, dtype=float32)
+            s.W = sp.sparse.random(*s.matrix_dim(), density=sparsity, dtype=settings['dtype'])
             s.col_idx = s.W.col
             s.row_idx = s.W.row
             s.W = s.W / SIZE

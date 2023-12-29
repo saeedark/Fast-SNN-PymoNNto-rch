@@ -4,6 +4,7 @@ import torch
 from matplotlib import pyplot as plt
 import numpy as np
 from globparams import *
+import random
 
 settings = {'dtype': torch.float32, 'synapse_mode': "SxD", 'device': 'cpu'}
 
@@ -33,19 +34,15 @@ class Input(Behavior):
             # s.W = s.matrix('random')
             n_row, n_col = s.matrix_dim()
             nnz = int(n_row * n_col * sparsity)
-            both_indices = torch.randint(n_row*n_col, size=(nnz,), device=s.device)
-            while len(both_indices.unique()) != nnz:
-                both_indices = both_indices.unique()
-                new_indices = torch.randint(n_row*n_col, size=(nnz-len(both_indices),), device=s.device)
-                both_indices = torch.hstack([both_indices, new_indices])
+            both_indices =  torch.tensor(random.sample(range(n_row*n_col), nnz), device=s.device)
             s.row_idx = both_indices % n_col
             s.col_idx = both_indices // n_col
-            indices = torch.stack([s.row_idx, s.col_idx])
+            indices = torch.stack([s.col_idx, s.row_idx])
             values =  s.tensor(mode='uniform', dim=(nnz,))
             s.W = torch.sparse_coo_tensor(indices, values, s.matrix_dim())
             s.W = s.W.coalesce()
             s.W = s.W / SIZE
-            s.W = s.W.to_sparse_csr()
+            s.W = s.W.to_sparse_csc()
             # s.W /= torch.sum(s.W, axis=0) #normalize during initialization
 
     def forward(self, neurons):
@@ -53,7 +50,8 @@ class Input(Behavior):
         for s in neurons.synapses('afferent', 'GLU'):
             # s.dst.voltage += torch.sum(s.W[s.src.spikes], axis=0)
             # s.dst.voltage += torch.mv(s.W, s.src.spikes*1.0)
-            s.dst.voltage += torch.mm(s.W, s.src.spikes.view(-1,1)*1.0).view(-1,)
+            # s.dst.voltage += torch.mm(s.src.spikes.view(1,-1)*1.0, s.W).view(-1,)
+            s.dst.voltage += torch.matmul(s.src.spikes*1.0, s.W)
             # pass
 
 
