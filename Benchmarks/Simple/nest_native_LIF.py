@@ -4,6 +4,7 @@ import numpy as np
 import os
 import time
 from globparams import *
+import random
 
 from pynestml.codegeneration.nest_code_generator_utils import NESTCodeGeneratorUtils
 
@@ -48,15 +49,12 @@ simple_stdp_synapse = """
 synapse stdp_nn_symm:
     state:
         w real = 1.0
-        pre_trace real = 0.
+        tb ms = 0. ms
 
     parameters:
         d ms = 1.0 ms  @nest::delay
         tau_tr_pre ms = 1.0 ms
         stdp_speed real = 0.01
-
-    equations:
-        pre_trace' = -pre_trace / tau_tr_pre
 
     input:
         pre_spikes real <- spike
@@ -66,11 +64,12 @@ synapse stdp_nn_symm:
         spike
 
     onReceive(post_spikes):
-        if pre_trace == 1:
-            w += stdp_speed
+        if t <= (tb + 1*ms):
+            if tb < t:
+                w += stdp_speed
 
     onReceive(pre_spikes):
-        pre_trace = 1
+        tb = t
         w = w
         deliver_spike(w, d)
 """
@@ -94,7 +93,7 @@ nest.Install(module_name)
 # Set up the NEST simulation
 nest.ResetKernel()
 nest.SetKernelStatus(
-    {"resolution": 1.0, "print_time": False, "local_num_threads": os.cpu_count()}
+    {"resolution": 1.0, "print_time": False, "local_num_threads": os.cpu_count(), "rng_seed": int(1 + random.random() * (2**32-2))}
 )
 
 # Define parameters
@@ -153,3 +152,6 @@ if PLOT:
     plt.ylabel("neurons")
     plt.xlabel("t")
     plt.show()
+
+if False:
+    print(nest.GetConnections().w)
